@@ -2997,6 +2997,9 @@ status()
 # MAIN
 # ==============================================================================
 
+# OPENWRT: платформенный слой z2k-openwrt (nftables/fw4, netifd, без NDM). На Keenetic файла нет.
+[ -r "$ZAPRET_BASE/openwrt/lib/s99-openwrt.sh" ] && . "$ZAPRET_BASE/openwrt/lib/s99-openwrt.sh"
+
 case "$1" in
     start)
         start

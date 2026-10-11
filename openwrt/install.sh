@@ -1,0 +1,132 @@
+#!/bin/sh
+# z2k-openwrt — установка на OpenWrt 23.05+ (fw4/nftables).
+#
+# Сейчас (фаза 2) ставит из локальной копии репозитория или бандла
+# (openwrt/maint/make-bundle.sh): sh openwrt/install.sh
+# Сетевая установка одной командой по подписанному манифесту — фаза 3.
+#
+# Переменные:
+#   Z2K_OW_SKIP_DEPS=1    не ставить пакеты (уже стоят / нет сети до репозиториев)
+#   Z2K_OW_ENGINE_TGZ=…   взять архив движка из файла (проверяется по sha пина)
+#   Z2K_OW_NO_START=1     не запускать службу после установки
+
+set -u
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+ZD=/opt/zapret2
+OW_ZD="$ZD"
+
+. "$ROOT/openwrt/lib/platform.sh"
+. "$ROOT/openwrt/lib/channel.sh"
+. "$ROOT/openwrt/lib/engine.sh"
+. "$ROOT/openwrt/lib/layout.sh"
+
+say()  { echo "[z2k] $*"; }
+warn() { echo "[z2k] ВНИМАНИЕ: $*" >&2; }
+die()  { echo "[z2k] ОШИБКА: $*" >&2; exit 1; }
+
+# --- 0. проверки ----------------------------------------------------------------
+[ "$(id -u)" = 0 ] || die "нужен root"
+ow_is_openwrt || die "это не OpenWrt (нет /etc/openwrt_release)"
+ow_series_supported || die "OpenWrt $(ow_release) не поддерживается (нужен 23.05 или новее)"
+ow_has_fw4 || die "нет fw4 (nftables) — нужен OpenWrt 23.05+ с firewall4"
+PM=$(ow_pkg_manager) || die "не найден пакетный менеджер (opkg/apk)"
+ARCH=$(ow_pkg_arch)
+ow_engine_arch >/dev/null || die "под архитектуру $ARCH нет сборки движка zapret2"
+say "OpenWrt $(ow_release), $ARCH, пакеты: $PM"
+
+# --- 1. зависимости ------------------------------------------------------------------
+# kmod-nft-queue тянет nfnetlink_queue; nft, fw4, kmod-nft-nat — в базе 23.05+.
+DEPS="curl ca-bundle kmod-nft-queue"
+if [ -z "${Z2K_OW_SKIP_DEPS:-}" ]; then
+	missing=""
+	for p in $DEPS; do ow_pkg_installed "$p" || missing="$missing $p"; done
+	if [ -n "$missing" ]; then
+		say "ставлю пакеты:$missing"
+		ow_pkg_update >/dev/null 2>&1 || warn "обновление списка пакетов не удалось"
+		# shellcheck disable=SC2086
+		ow_pkg_install $missing || die "не установились пакеты:$missing"
+	fi
+fi
+
+# --- 2. остановить прежнюю установку ------------------------------------------------
+[ -x /etc/init.d/z2k ] && /etc/init.d/z2k stop >/dev/null 2>&1
+
+# --- 3. движок ------------------------------------------------------------------------------
+PIN="$ROOT/openwrt/engine.pin"
+TGZ="${Z2K_OW_ENGINE_TGZ:-/tmp/z2k-engine.tar.gz}"
+if [ -n "${Z2K_OW_ENGINE_TGZ:-}" ]; then
+	[ "$(ow_sha256 "$TGZ")" = "$(ow_pin_get ENGINE_SHA256 "$PIN")" ] || die "архив движка $TGZ не совпадает с пином"
+else
+	say "качаю движок $(ow_pin_get ENGINE_VERSION "$PIN")"
+	ow_engine_fetch "$PIN" "$TGZ" || die "движок не скачался"
+fi
+ow_engine_install "$TGZ" "$PIN" "$ZD" || die "движок не установился"
+[ -n "${Z2K_OW_ENGINE_TGZ:-}" ] || rm -f "$TGZ"
+say "движок: $(cat "$ZD/.z2k-engine-version") ($(ow_engine_arch))"
+
+# --- 4. файлы z2k и порта ---------------------------------------------------------------
+n=0
+for f in $(ow_layout_files "$ROOT"); do
+	for t in $(ow_layout_targets "$f"); do
+		mkdir -p "$(dirname "$t")" || die "не создаётся $(dirname "$t")"
+		cp -f "$ROOT/$f" "$t.z2k-new" && mv -f "$t.z2k-new" "$t" || die "не скопировался $f -> $t"
+		case "$t" in
+			/etc/init.d/*|/etc/hotplug.d/*|*/init.d/z2k-engine|*.sh) chmod 755 "$t" ;;
+		esac
+		n=$((n + 1))
+	done
+done
+say "разложено файлов: $n"
+
+# custom.d из архива движка (DISABLE_CUSTOM=1 по умолчанию — включаются в меню/панели).
+CUSTOM="$ZD/init.d/keenetic/custom.d"
+mkdir -p "$CUSTOM"
+for s in 50-stun4all 50-discord-media; do
+	[ -f "$ZD/init.d/custom.d.examples.linux/$s" ] && cp -f "$ZD/init.d/custom.d.examples.linux/$s" "$CUSTOM/$s"
+done
+
+# Совместимость: код z2k (панель, меню, рантайм-скрипты) по умолчанию зовёт
+# /opt/etc/init.d/S99zapret2. На OpenWrt этого каталога никто не использует.
+mkdir -p /opt/etc/init.d /opt/etc/zapret2
+ln -sf /etc/init.d/z2k /opt/etc/init.d/S99zapret2
+
+echo "$Z2K_OW_CHANNEL" > "$ZD/.z2k-branch"
+
+# --- 5. flow offloading -------------------------------------------------------------------
+# Потоки, ушедшие в offload fw4, мимо очереди nfqws2 — обход ломается. Как и
+# апстримный zapret2: offload fw4 выключаем, а движок ставит свою flowtable
+# с исключениями для трафика обхода (FLOWOFFLOAD в конфиге).
+FLOWOFFLOAD=none
+if [ "$(uci -q get firewall.@defaults[0].flow_offloading)" = 1 ]; then
+	if [ "$(uci -q get firewall.@defaults[0].flow_offloading_hw)" = 1 ]; then FLOWOFFLOAD=hardware; else FLOWOFFLOAD=software; fi
+	say "offload fw4 включён — переношу его в движок (FLOWOFFLOAD=$FLOWOFFLOAD) и выключаю в fw4"
+	uci set firewall.@defaults[0].flow_offloading=0
+	uci set firewall.@defaults[0].flow_offloading_hw=0
+	uci commit firewall
+	fw4 -q reload || warn "fw4 reload не удался"
+elif [ -f "$ZD/config" ]; then
+	FLOWOFFLOAD=$(sed -n 's/^FLOWOFFLOAD=//p' "$ZD/config" | head -n 1)
+	[ -n "$FLOWOFFLOAD" ] || FLOWOFFLOAD=none
+fi
+export FLOWOFFLOAD
+
+# --- 6. стратегии и конфиг -----------------------------------------------------------------
+. "$ROOT/openwrt/lib/z2k-config.sh"
+say "генерирую стратегии и конфиг"
+ow_z2k_generate || die "генерация конфига не удалась"
+
+# --- 7. автозапуск и старт ------------------------------------------------------------------
+/etc/init.d/z2k enable
+if [ -z "${Z2K_OW_NO_START:-}" ]; then
+	say "применяю стратегии и запускаю службу"
+	ow_z2k_apply_strategies || warn "применение стратегий вернуло ошибку — смотрите вывод выше"
+	if /etc/init.d/z2k status >/dev/null 2>&1; then
+		say "готово: обход работает (nft list table inet zapret2 — правила)"
+	else
+		warn "служба не запустилась: /etc/init.d/z2k start — подробности"
+		exit 1
+	fi
+else
+	say "установлено, служба не запускалась (Z2K_OW_NO_START)"
+fi

@@ -20,6 +20,15 @@
 - Новый файл в репозитории = строка в `openwrt/compat-map.tsv`. Тесты: `dash openwrt/tests/run.sh`.
 - POSIX sh под busybox ash; nftables (fw4), procd, UCI. Целевые OpenWrt: 23.05, 24.10 (opkg), 25.x (apk).
 
+## Как устроен порт (фаза 2)
+
+- Движок = `files/S99zapret2.new` (на роутере `/opt/zapret2/init.d/z2k-engine`) + хук `# OPENWRT:` → `openwrt/lib/s99-openwrt.sh` (nft, netifd, без NDM). Логику z2k не переписываем — переопределяем функции в слое.
+- `/etc/init.d/z2k` — обёртка; `/opt/etc/init.d/S99zapret2` — симлинк на неё. UCI нет: источник правды `/opt/zapret2/config`.
+- Генерация конфига: `openwrt/lib/z2k-config.sh` (библиотеки z2k как есть, `set +u` обязателен, `GITHUB_RAW` → канал форка).
+- Раскладка файлов — только `openwrt/lib/layout.sh`. Движок — `openwrt/engine.pin` (sha архива).
+- Go 1.25.13 для сборок: `~/go/bin/go1.25.13` (1.26+ ломает MIPS softfloat).
+- Под Windows tar не понимает `C:/…` — передавай POSIX-пути (`/c/…`).
+
 ## Справка по апстриму
 
 - Устройство: `ARCHITECTURE.md`, релизы: `RELEASING.md`.

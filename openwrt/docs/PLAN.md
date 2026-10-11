@@ -60,8 +60,8 @@
 | Что | Где |
 |---|---|
 | Данные, движок, списки, Lua, lib | `/opt/zapret2` (как у апстрима и у zapret на OpenWrt) |
-| Настройки | `/etc/config/z2k` (UCI) → генерируется `/opt/zapret2/config` |
-| Сервисы | `/etc/init.d/z2k`, `z2k-tg-tunnel`, `z2k-http-tunnel`, `z2k-rt-proxy`, `z2k-warp`, `z2k-panel` (procd, respawn) |
+| Настройки | `/opt/zapret2/config` (как у z2k; UCI в 1.0 нет — см. фазу 2) |
+| Сервисы | `/etc/init.d/z2k` → движок `/opt/zapret2/init.d/z2k-engine`; модули фазы 5–6 — свои init |
 | Правила | `/usr/share/nftables.d/` или fw4 include `/etc/z2k/fw4.nft` |
 | Планировщик | штатный cron (`/etc/crontabs/root`) |
 | CLI | `/usr/bin/z2k` |
@@ -100,20 +100,48 @@
   деинсталлятор — после фазы 2 (нужно, что ставить).
 - Позже: OpenWrt-feed с пакетами `z2k` (noarch) и `z2k-bin-<arch>`.
 
-### Фаза 2. Ядро обхода
-- Движок из `zapret2-z2k` openwrt-embedded (пин + sha), `install_bin.sh`.
-- procd-init `openwrt/init.d/z2k` на основе апстримного
-  `init.d/openwrt/zapret2` из архива движка; z2k-генератор `NFQWS2_OPT`
-  (`lib/config_official.sh`, `lib/strategies.sh`), Lua-цепочка
-  (`--lua-init=@…` в порядке `S99zapret2.new:942-1050`), `WS_USER=nobody`.
-- UCI `z2k` → `/opt/zapret2/config` (единая писалка `set_flag` апстрима).
-- nft: очередь NFQUEUE (`QNUM=200`, метка `0x40000000`, connmark-исключение
-  `0x20000000`), фикс MASQUERADE для помеченного UDP, порт-сеты, исключение
-  из flow offload. Аналог ipset `zport_tcp/udp` — nft set.
-- sysctl conntrack (`tcp_be_liberal`, `checksum=0`); Keenetic-only `fastnat`,
-  `fastroute`, PPE — нет.
-- kmods: `kmod-nft-queue`, `kmod-nft-nat`, `kmod-nft-offload`(если есть),
-  `kmod-nf-conntrack`.
+### Фаза 2. Ядро обхода (код готов, ждёт проверки на живом OpenWrt)
+Решения (2026-10-11):
+- **Движок z2k = `files/S99zapret2.new` апстрима**, ставится как
+  `/opt/zapret2/init.d/z2k-engine`. В нём ~3000 строк логики z2k (автохостлист,
+  кэш ротации, отладка, исключения, whitelist, Lua-цепочка), апстрим правит его
+  постоянно — переписывать под procd значило бы переносить каждую правку руками.
+  Патч — 1 строка-хук `# OPENWRT:` перед диспетчером, подключающая
+  `openwrt/lib/s99-openwrt.sh`: межсетевой экран — апстримный nft-путь zapret2
+  (`common/nft.sh` + функции из `init.d/openwrt/functions` движка: netifd,
+  `@wanif`, flow offload), исключения `nozapret` — nft-сеты, модули — kmod,
+  iptables-слои z2k (connmark политик Keenetic, UDP masquerade, RST-фильтр,
+  подметалки) на nft не включаются, планировщик и lighttpd Keenetic — нет.
+- **UCI в 1.0 нет.** Источник правды — `/opt/zapret2/config`: генератор z2k
+  пишет его с нуля по списку ключей, панель/меню — через `set_flag`. Второй
+  источник (UCI) затирал бы их.
+- `/etc/init.d/z2k` — обёртка rc.common над движком; `/opt/etc/init.d/S99zapret2`
+  — симлинк на неё (код z2k зовёт этот путь по умолчанию).
+- Пути z2k не меняем: `/opt/zapret2`, `/opt/etc/zapret2`, custom.d в
+  `init.d/keenetic/custom.d` (так пишет генератор конфига).
+
+Сделано:
+- [x] `openwrt/engine.pin` — v1.0.5.2-z2k-r0, sha256 архива целиком; бинарники
+  статические, на musl работают. Сборок нет под mips64el и ppc64.
+- [x] `openwrt/lib/engine.sh` — скачать/проверить/разложить, бинарники своей
+  арки в `nfq2/`, `ip2net/`, `mdig/`, `binaries/` удаляется (−5 МБ флеша).
+- [x] `openwrt/lib/layout.sh` — единственная раскладка файлов (установщик и
+  будущий install_map).
+- [x] `openwrt/lib/z2k-config.sh` — генерация библиотеками z2k без установщика
+  Keenetic (`set +u` обязателен; `GITHUB_RAW` → канал форка, иначе в конфиг
+  уходит `necronicle/z2k`).
+- [x] `openwrt/lib/s99-openwrt.sh`, хук в `files/S99zapret2.new`.
+- [x] `openwrt/init.d/z2k`, `openwrt/hotplug/90-z2k` (reload_ifsets на ifup/ifdown).
+- [x] `openwrt/install.sh` (из локальной копии/бандла), `openwrt/uninstall.sh`,
+  `openwrt/maint/make-bundle.sh` (75 файлов, 5,3 МБ с движком).
+- [x] flow offload fw4 → `FLOWOFFLOAD` движка (своя flowtable с исключениями).
+- [x] Тесты: `test_engine` (реальный архив), `test_generate` (генератор в
+  песочнице), `test_layout` (раскладка ↔ compat-map, хук S99).
+- [ ] **Проверка на живом OpenWrt** (QEMU x86_64 или роутер): старт,
+  `nft list table inet zapret2`, nfqws2 на очереди 200, обход реально работает,
+  reload fw4, ifup/ifdown, перезагрузка.
+- [ ] Наблюдать: нужен ли на nft аналог z2k UDP masquerade fix (на iptables
+  чинил NAT сгенерированных UDP-пакетов); у апстрима на nft — notrack/postnat.
 
 ### Фаза 3. Обновления
 - Мейнтейнер: `openwrt/maint/upstream-sync.sh` — проверка подписи апстрима,

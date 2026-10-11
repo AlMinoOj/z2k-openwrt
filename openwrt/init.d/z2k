@@ -1,0 +1,47 @@
+#!/bin/sh /etc/rc.common
+# z2k-openwrt: обход DPI (zapret2 + z2k).
+#
+# Обёртка над движком z2k — /opt/zapret2/init.d/z2k-engine (это
+# files/S99zapret2.new апстрима + платформенный слой openwrt/lib/s99-openwrt.sh).
+# Вся логика старта/остановки, Lua-цепочка, кэш ротации и исключения живут в
+# движке и приезжают с апстримом без ручного переноса; здесь — только
+# интеграция с rc.common (enable/disable, автозапуск, команды).
+
+START=99
+STOP=10
+
+ENGINE=/opt/zapret2/init.d/z2k-engine
+
+EXTRA_COMMANDS="status start_fw stop_fw restart_fw start_daemons stop_daemons restart_daemons reload_ifsets list_ifsets list_table debug_rotate"
+EXTRA_HELP="	status          Состояние демонов nfqws2
+	start_fw        Поставить правила nftables
+	stop_fw         Снять правила nftables
+	restart_fw      Переставить правила nftables
+	start_daemons   Запустить только демоны
+	stop_daemons    Остановить только демоны
+	restart_daemons Перезапустить только демоны
+	reload_ifsets   Обновить наборы WAN/LAN-интерфейсов (после ifup/ifdown)
+	list_ifsets     Показать наборы интерфейсов
+	list_table      Показать таблицу nftables zapret2
+	debug_rotate    Обрезать отладочный лог, если перерос потолок"
+
+engine()
+{
+	[ -x "$ENGINE" ] || { echo "z2k: движок не установлен ($ENGINE)"; return 1; }
+	"$ENGINE" "$@"
+}
+
+start()           { engine start; }
+stop()            { engine stop; }
+restart()         { engine restart; }
+status()          { engine status; }
+start_fw()        { engine start_fw; }
+stop_fw()         { engine stop_fw; }
+restart_fw()      { engine restart_fw; }
+start_daemons()   { engine start_daemons; }
+stop_daemons()    { engine stop_daemons; }
+restart_daemons() { engine restart_daemons; }
+reload_ifsets()   { engine reload_ifsets; }
+list_ifsets()     { engine list_ifsets; }
+list_table()      { engine list_table; }
+debug_rotate()    { engine debug_rotate; }

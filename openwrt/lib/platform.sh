@@ -147,12 +147,12 @@ ow_engine_arch() {
 		arm)      echo linux-arm ;;
 		amd64)    echo linux-x86_64 ;;
 		386)      echo linux-x86 ;;
-		mips64le) echo linux-mips64el ;;
+		# mips64le: в архиве движка сборки нет (только mips64 BE) — не поддерживается.
 		mips64)   echo linux-mips64 ;;
 		mipsle)   echo linux-mipsel ;;
 		mips)     echo linux-mips ;;
 		riscv64)  echo linux-riscv64 ;;
-		ppc|ppc64) echo linux-ppc ;;
+		ppc)      echo linux-ppc ;;   # 32-bit BE; под ppc64 сборки движка нет
 		*) return 1 ;;
 	esac
 }

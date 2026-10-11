@@ -57,7 +57,7 @@ z2k.sh	replaced	точка входа форка: openwrt/install.sh и /usr/bin
 z2k_cleanup.sh	replaced	деинсталлятор форка: openwrt/uninstall.sh
 
 # --- init и рантайм ----------------------------------------------------------
-files/S99zapret2.new	replaced	procd-init: openwrt/init.d/z2k + openwrt/nft/*
+files/S99zapret2.new	patched	движок z2k на OpenWrt (init.d/z2k-engine): 1 строка-хук `# OPENWRT:` -> openwrt/lib/s99-openwrt.sh
 files/000-zapret2.sh	keenetic	NDM netfilter-хук; на OpenWrt правила держит fw4
 files/ndm/*	keenetic	NDM netfilter-хуки; аналоги — fw4 include (openwrt/nft/*)
 files/z2k-ppe-deoffload.sh	keenetic	PPE/connskip Keenetic; на OpenWrt — исключение из flow offload

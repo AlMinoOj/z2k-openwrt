@@ -1,0 +1,16 @@
+#!/bin/sh
+# z2k-openwrt: при подъёме/падении интерфейса обновить наборы WAN/LAN в
+# nft-таблице zapret2 (правила очереди привязаны к @wanif/@wanif6).
+# Аналог init.d/openwrt/90-zapret2 движка.
+
+[ "$ACTION" = ifup ] || [ "$ACTION" = ifdown ] || exit 0
+[ -n "$INTERFACE" ] || exit 0
+
+Z2K=/etc/init.d/z2k
+[ -x "$Z2K" ] && "$Z2K" enabled || exit 0
+
+# Обход выключен в конфиге — правил нет, обновлять нечего.
+grep -q '^ENABLED=1' /opt/zapret2/config 2>/dev/null || exit 0
+
+logger -t z2k "reload ifsets: $ACTION $INTERFACE"
+"$Z2K" reload_ifsets >/dev/null 2>&1

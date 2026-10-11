@@ -1,0 +1,14 @@
+# Пин движка zapret2 (сборка openwrt-embedded форка necronicle/zapret2-z2k).
+#
+# Единственное, что роутер качает НЕ из репозитория форка. Архив проверяется
+# по sha256 ниже целиком — подменить содержимое (бинарники, common/*.sh,
+# install_bin.sh) нельзя. Бамп — только осознанно, при еженедельной
+# синхронизации (openwrt/maint/upstream-sync.sh покажет смену пина апстрима
+# в lib/install.sh: fallback_url).
+#
+# Формат: KEY=value, читается как данные (не исполняется).
+ENGINE_VERSION=v1.0.5.2-z2k-r0
+ENGINE_URL=https://github.com/necronicle/zapret2-z2k/releases/download/v1.0.5.2-z2k-r0/zapret2-v1.0.5.2-z2k-r0-openwrt-embedded.tar.gz
+ENGINE_SHA256=02eec373b093083b426c27191bb6af260ac51e4e2739c51270270a351d2a1a16
+# Каталог верхнего уровня внутри архива.
+ENGINE_TOPDIR=zapret2-v1.0.5.2-z2k-r0

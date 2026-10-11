@@ -71,7 +71,8 @@ check_arch() { # pkgarch goarch engine armlevel
 check_arch mipsel_24kc               mipsle   linux-mipsel   ""
 check_arch mipsel_74kc               mipsle   linux-mipsel   ""
 check_arch mips_24kc                 mips     linux-mips     ""
-check_arch mips64el_mips64r2         mips64le linux-mips64el ""
+eq "goarch mips64el" mips64le "$(ow_goarch mips64el_mips64r2)"
+rc "движка под mips64el нет" 1 ow_engine_arch mips64el_mips64r2
 check_arch mips64_octeonplus         mips64   linux-mips64   ""
 check_arch aarch64_cortex-a53        arm64    linux-arm64    ""
 check_arch aarch64_generic           arm64    linux-arm64    ""

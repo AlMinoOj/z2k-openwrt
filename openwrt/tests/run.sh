@@ -9,7 +9,7 @@ SH="${Z2K_TEST_SH:-$(command -v dash || echo sh)}"
 fail=0
 
 echo "== синтаксис ($SH -n)"
-for f in "$ROOT"/openwrt/lib/*.sh "$ROOT"/openwrt/maint/*.sh "$ROOT"/openwrt/tests/*.sh; do
+for f in "$ROOT"/openwrt/*.sh "$ROOT"/openwrt/lib/*.sh "$ROOT"/openwrt/maint/*.sh "$ROOT"/openwrt/tests/*.sh "$ROOT"/openwrt/init.d/* "$ROOT"/openwrt/hotplug/* "$ROOT"/files/S99zapret2.new; do
 	[ -f "$f" ] || continue
 	"$SH" -n "$f" || { echo "FAIL: синтаксис $f"; fail=1; }
 done
