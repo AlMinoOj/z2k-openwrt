@@ -666,8 +666,12 @@ UNIQUE_JOB=$(jget "$OUT" 'd["job"]')
 JOB_IDS="$JOB_IDS $UNIQUE_JOB"
 OUT=$(cgi_stub GET /strategy/unique-set "" | cgi_body)
 assert_eq "старый успешный итог очищен перед новым запуском" "null" "$(jget "$OUT" 'd["result"]')"
+# Lock снимает обработчик выхода задачи, а маркер .exit обёртка пишет раньше,
+# чем подоболочка выходит. Поэтому ждём и маркер, и снятие lock: проверка
+# про утечку lock, а не про порядок в пределах миллисекунд. Под нагрузкой
+# параллельного CI окно между ними росло, и тест падал без поломки (11.10.2026).
 _wait=0
-while [ ! -f "/tmp/z2k-job-$UNIQUE_JOB.exit" ] && [ "$_wait" -lt 10 ]; do sleep 1; _wait=$((_wait + 1)); done
+while { [ ! -f "/tmp/z2k-job-$UNIQUE_JOB.exit" ] || [ -d "$STRATEGY_UNIQUE_LOCK_DIR" ]; } && [ "$_wait" -lt 20 ]; do sleep 1; _wait=$((_wait + 1)); done
 assert_eq "задача сняла свой lock после окончания" "0" "$([ -d "$STRATEGY_UNIQUE_LOCK_DIR" ] && echo 1 || echo 0)"
 assert_contains "runner ставит проверочные флаги перед закреплённым IP и SNI" "classify -json -hello both -sni i.ytimg.com -also-test-ip 142.250.74.46 142.250.74.14:443" "$(cat "$SB/detect-args.log" 2>/dev/null)"
 assert_contains "runner повторяет поиск со вторым IP как опорным" "classify -json -hello both -sni i.ytimg.com -also-test-ip 142.250.74.14 142.250.74.46:443" "$(cat "$SB/detect-args.log" 2>/dev/null)"
