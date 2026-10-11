@@ -16,6 +16,8 @@
 - Keenetic-only файлы не удалять: исключать из поставки через `openwrt/compat-map.tsv`.
 - Неизбежная правка апстримного файла: точечно, с маркером `# OPENWRT:`, и файл помечается `patched` в `openwrt/compat-map.tsv`.
 - README форка — `.github/README.md`.
+- Апстримный `.gitignore` игнорирует любой `tools/` и `*.key`: инструменты мейнтейнера — в `openwrt/maint/`. После добавления файлов проверяй `git ls-files openwrt`.
+- Новый файл в репозитории = строка в `openwrt/compat-map.tsv`. Тесты: `dash openwrt/tests/run.sh`.
 - POSIX sh под busybox ash; nftables (fw4), procd, UCI. Целевые OpenWrt: 23.05, 24.10 (opkg), 25.x (apk).
 
 ## Справка по апстриму
