@@ -103,6 +103,14 @@ for c in unknown replaced patched portable keenetic dev; do
 	esac
 done
 
+# --- наши Go-сборки ---
+if git diff --name-only "$BASE" "$TAG" -- z2k-detect z2k-warpd | grep -qv '/builds/'; then
+	hr "Go-исходники"
+	echo "апстрим менял исходники: $(git diff --name-only "$BASE" "$TAG" -- z2k-detect z2k-warpd | grep -v '/builds/' | cut -d/ -f1 | sort -u | tr '
+' ' ')"
+	echo "после merge пересоберите наши сборки: sh openwrt/maint/build-go.sh all (и закоммитьте openwrt/builds)"
+fi
+
 # --- пин движка ---
 hr "движок"
 pin_of() { git show "$1:lib/install.sh" | sed -n 's/^[[:space:]]*local fallback_url="\(.*\)"$/\1/p' | head -n 1; }

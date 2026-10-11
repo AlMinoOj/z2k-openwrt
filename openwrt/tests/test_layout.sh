@@ -29,7 +29,8 @@ done
 # уронит тест, и его придётся осознанно разложить или отложить.
 deferred() {
 	case "$1" in
-		*/builds/*) return 0 ;;                                   # фаза 5
+		*/builds/*) return 0 ;;                                   # сборки модулей ставит modules.sh
+		*.go) return 0 ;;                                         # исходники: на роутер едет сборка (openwrt/builds)
 		webpanel/*|lib/webpanel.sh|lib/menu.sh) return 0 ;;       # фаза 6 (menu.sh — CLI)
 		files/z2k-tg-*|files/z2k-fix-tg-watchdog.sh|files/z2k-warp.sh|files/z2k-insta-ip-refresh.sh) return 0 ;;  # фаза 5
 	esac

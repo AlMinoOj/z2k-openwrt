@@ -28,6 +28,8 @@ import (
 	"net"
 	"os/exec"
 	"strings"
+
+	"github.com/necronicle/z2k/z2k-detect/internal/nftfw" // OPENWRT: правила на nftables
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -158,6 +160,12 @@ func nextSourcePort() uint16 {
 // Снимаем только своё: точная форма правила и порт из нашего диапазона.
 // Чужие правила с флагом RST — не наша забота, и трогать их нельзя.
 func sweepStaleRSTRules() {
+	// OPENWRT: на nftables порты зондов — элементы сета z2k_detect, хвосты
+	// снимаются очисткой сета.
+	if nftfw.Available() {
+		nftfw.SweepRSTPorts()
+		return
+	}
 	out, err := exec.Command("iptables", "-S", "OUTPUT").Output()
 	if err != nil {
 		return
@@ -182,6 +190,14 @@ func sweepStaleRSTRules() {
 // перебором в 303 зонда на любом домене. Отказ здесь молчаливый по замыслу
 // (см. ниже), поэтому поломка выглядела как свойство сети.
 func suppressKernelRST(sport uint16) func() {
+	// OPENWRT: на nftables — элемент сета вместо правила iptables.
+	if nftfw.Available() {
+		undo, err := nftfw.SuppressRST(sport)
+		if err != nil {
+			rstRuleFailed.Store(true)
+		}
+		return undo
+	}
 	args := []string{"-I", "OUTPUT", "-p", "tcp", "--sport", fmt.Sprint(sport),
 		"--tcp-flags", "RST", "RST", "-j", "DROP"}
 	if err := exec.Command("iptables", args...).Run(); err != nil {

@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"sync"
 	"syscall"
+
+	"github.com/necronicle/z2k/z2k-detect/internal/nftfw" // OPENWRT: правила на nftables
 )
 
 // probeMark is stamped onto every outgoing probe socket via SO_MARK. The
@@ -28,6 +30,11 @@ var (
 // the mark was added). Note: -t mangle must precede -C/-I in iptables syntax.
 func ensureBypassRule() error {
 	ruleOnce.Do(func() {
+		// OPENWRT: на nftables — правило в таблице z2k_detect.
+		if nftfw.Available() {
+			ruleErr = nftfw.EnsureTable()
+			return
+		}
 		ruleSpec := []string{
 			"-m", "mark", "--mark", "0x40000000/0x40000000",
 			"-j", "CONNMARK", "--set-mark", "0x20000000/0x20000000",
