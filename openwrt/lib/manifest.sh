@@ -59,6 +59,8 @@ ow_steps_for()
 			echo regen-strategies; echo regen-config; echo validate-config; echo restart-service ;;
 		lib/config_official.sh|openwrt/lib/z2k-config.sh)
 			echo regen-config; echo validate-config; echo restart-service ;;
+		openwrt/bin/z2k-cron)
+			echo cron ;;
 		files/lua/*|files/fake/*|files/S99zapret2.new|files/lists/*|files/etc/*|extras/*|\
 		openwrt/lib/s99-openwrt.sh|openwrt/init.d/z2k)
 			echo restart-service ;;
@@ -75,6 +77,7 @@ ow_step_order()
 	echo validate-config
 	echo reset-state
 	echo restart-service
+	echo cron
 }
 
 # ow_steps_merged — пути на stdin -> уникальные шаги в каноническом порядке.

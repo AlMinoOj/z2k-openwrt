@@ -169,6 +169,7 @@ run_steps() {
 			restart-service)
 				if service_enabled; then "$INIT" restart >/dev/null 2>&1 || rc=1
 				else log "обход выключен в конфиге — не перезапускаю"; fi ;;
+			cron) sh "$ZD/openwrt/bin/z2k-cron" install >/dev/null 2>&1 || rc=1 ;;
 			*) log "неизвестный шаг: $s"; rc=1 ;;
 		esac
 		[ "$rc" = 0 ] || { log "шаг $s не удался"; return 1; }

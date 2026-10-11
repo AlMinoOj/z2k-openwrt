@@ -14,6 +14,8 @@ if [ -x /etc/init.d/z2k ]; then
 	/etc/init.d/z2k disable >/dev/null 2>&1
 fi
 nft delete table inet zapret2 2>/dev/null
+[ -f /opt/zapret2/openwrt/bin/z2k-cron ] && sh /opt/zapret2/openwrt/bin/z2k-cron remove >/dev/null 2>&1
+rm -f /usr/bin/z2k-update
 
 rm -f /etc/init.d/z2k /etc/hotplug.d/iface/90-z2k
 [ -L /opt/etc/init.d/S99zapret2 ] && rm -f /opt/etc/init.d/S99zapret2

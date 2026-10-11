@@ -1,0 +1,131 @@
+#!/bin/sh
+# z2k-cron — задачи z2k по расписанию на OpenWrt (вместо резидентного
+# планировщика z2k files/z2k-scheduler.sh: на Keenetic штатный cron Entware
+# сломан, на OpenWrt cron из busybox работает).
+#
+#   z2k-cron install      записать блок z2k в /etc/crontabs/root и включить cron
+#   z2k-cron remove       убрать блок
+#   z2k-cron auto-update  ночное автообновление (час — Z2K_AU_HOUR в конфиге)
+#   z2k-cron lists        обновление списков (geosite и др.)
+#   z2k-cron tcp16        ночной перемер линии (нужен z2k-detect, фаза 5)
+#   z2k-cron watchdog     каждые 5 минут: служба жива, правила на месте,
+#                         час автообновления в cron совпадает с конфигом
+#
+# Тяжёлые задачи (обновление, списки) идут с задержкой 0–59 мин, постоянной
+# для роутера: тысяча роутеров не приходит на GitHub в одну секунду.
+
+set -u
+ZD="${Z2K_OW_ZD:-/opt/zapret2}"
+CONF="$ZD/config"
+CRONTAB="${Z2K_OW_CRONTAB:-/etc/crontabs/root}"
+INIT=/etc/init.d/z2k
+BEGIN="# z2k-openwrt BEGIN (управляется z2k-cron, не редактировать)"
+END="# z2k-openwrt END"
+
+log() { logger -t z2k-cron "$*" 2>/dev/null; echo "[z2k-cron] $*"; }
+
+conf_get() { # <ключ> <умолчание>
+	local v
+	v=$(sed -n "s/^$1=//p" "$CONF" 2>/dev/null | head -n 1 | tr -d "\"' ")
+	echo "${v:-$2}"
+}
+
+au_hour() {
+	local h; h=$(conf_get Z2K_AU_HOUR 02)
+	case "$h" in [0-9]|[01][0-9]|2[0-3]) echo "$h" | awk '{ print $1 + 0 }' ;; *) echo 2 ;; esac
+}
+
+# Задержка 0..3599 с, постоянная для роутера (по MAC-адресам и имени).
+host_jitter() {
+	local h
+	h=$( { cat /sys/class/net/*/address 2>/dev/null; uname -n; } | md5sum | cut -c1-4)
+	echo $(( $(printf '%d' "0x$h") % 3600 ))
+}
+
+block() {
+	local h; h=$(au_hour)
+	echo "$BEGIN"
+	echo "0 $h * * * $ZD/openwrt/bin/z2k-cron auto-update"
+	echo "30 3 * * * $ZD/openwrt/bin/z2k-cron tcp16"
+	echo "0 4 * * * $ZD/openwrt/bin/z2k-cron lists"
+	echo "*/5 * * * * $ZD/openwrt/bin/z2k-cron watchdog"
+	echo "$END"
+}
+
+strip_block() { # crontab без нашего блока -> stdout
+	[ -f "$CRONTAB" ] || return 0
+	awk -v b="$BEGIN" -v e="$END" '$0 == b { skip = 1; next } $0 == e { skip = 0; next } !skip' "$CRONTAB"
+}
+
+cron_reload() {
+	[ -n "${Z2K_OW_CRONTAB:-}" ] && return 0     # тесты
+	/etc/init.d/cron enable >/dev/null 2>&1
+	/etc/init.d/cron restart >/dev/null 2>&1
+}
+
+cmd_install() {
+	mkdir -p "$(dirname "$CRONTAB")"
+	{ strip_block; block; } > "$CRONTAB.z2k-new" && mv -f "$CRONTAB.z2k-new" "$CRONTAB"
+	cron_reload
+	log "расписание установлено (автообновление в $(au_hour):00 + задержка роутера)"
+}
+
+cmd_remove() {
+	strip_block > "$CRONTAB.z2k-new" && mv -f "$CRONTAB.z2k-new" "$CRONTAB"
+	cron_reload
+}
+
+enabled() { grep -q '^ENABLED=1' "$CONF" 2>/dev/null; }
+
+cmd_watchdog() {
+	# Час автообновления меняют панель и меню (Z2K_AU_HOUR) — подтянуть cron.
+	grep -qF "$ZD/openwrt/bin/z2k-cron auto-update" "$CRONTAB" 2>/dev/null &&
+		! grep -q "^0 $(au_hour) \* \* \* $ZD/openwrt/bin/z2k-cron auto-update" "$CRONTAB" &&
+		cmd_install
+
+	[ -x "$INIT" ] && "$INIT" enabled && enabled || return 0
+	# Обрезать отладочный лог, если отладка включена и он перерос потолок.
+	"$INIT" debug_rotate >/dev/null 2>&1
+	# Обновление/установка в процессе — не мешаем.
+	[ -d /tmp/z2k-update.lock ] && return 0
+	[ -d /var/run/z2k-init.lock ] && return 0     # идёт перезапуск/остановка службы
+	if ! pgrep -f "$ZD/nfq2/nfqws2" >/dev/null 2>&1; then
+		log "nfqws2 не работает — перезапускаю службу"
+		"$INIT" restart >/dev/null 2>&1 || log "перезапуск не удался"
+		return 0
+	fi
+	# Цепочки-хуки таблицы zapret2 есть, пока правила стоят (stop_fw их удаляет).
+	if ! nft list chain inet zapret2 postnat_hook >/dev/null 2>&1 &&
+	   ! nft list chain inet zapret2 postrouting_hook >/dev/null 2>&1; then
+		log "правил nftables нет — ставлю заново"
+		"$INIT" restart_fw >/dev/null 2>&1
+	fi
+	return 0
+}
+
+cmd_auto_update() {
+	[ -n "${Z2K_OW_NO_JITTER:-}" ] || sleep "$(host_jitter)"
+	"$ZD/openwrt/bin/z2k-update" apply --auto
+}
+
+cmd_lists() {
+	[ -n "${Z2K_OW_NO_JITTER:-}" ] || sleep "$(host_jitter)"
+	[ -f "$ZD/z2k-update-lists.sh" ] || { log "нет z2k-update-lists.sh"; return 1; }
+	sh "$ZD/z2k-update-lists.sh"
+}
+
+cmd_tcp16() {
+	[ -x /opt/sbin/z2k-detect ] || [ -x "$ZD/z2k-detect" ] || return 0   # модуль детектора не установлен
+	[ -f "$ZD/z2k-tcp16-probe.sh" ] && sh "$ZD/z2k-tcp16-probe.sh"
+}
+
+case "${1:-}" in
+	install)     cmd_install ;;
+	remove)      cmd_remove ;;
+	auto-update) cmd_auto_update ;;
+	lists)       cmd_lists ;;
+	tcp16)       cmd_tcp16 ;;
+	watchdog)    cmd_watchdog ;;
+	block)       block ;;
+	*) sed -n '2,15p' "$0"; exit 2 ;;
+esac

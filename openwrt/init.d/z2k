@@ -31,17 +31,44 @@ engine()
 	"$ENGINE" "$@"
 }
 
-start()           { engine start; }
-stop()            { engine stop; }
-restart()         { engine restart; }
+# Изменяющие действия — по одному. Их зовут cron (сторож, списки), панель,
+# обновлятор и hotplug, и два одновременных перезапуска оставляли nfqws2-сироту
+# без pidfile: он держал очередь, и новый демон не стартовал
+# (nfq_create_queue: Operation not permitted). flock в busybox OpenWrt не
+# всегда есть — замок каталогом, протухший (держатель умер) снимается.
+LOCKD=/var/run/z2k-init.lock
+z2k_lock()
+{
+	local i=0 p
+	while ! mkdir "$LOCKD" 2>/dev/null; do
+		p=$(cat "$LOCKD/pid" 2>/dev/null)
+		if [ -n "$p" ] && ! kill -0 "$p" 2>/dev/null; then rm -rf "$LOCKD"; continue; fi
+		i=$((i + 1))
+		[ "$i" -ge 120 ] && { echo "z2k: другое действие со службой не закончилось за 120 с"; return 1; }
+		sleep 1
+	done
+	echo $$ > "$LOCKD/pid"
+}
+locked()
+{
+	local rc
+	z2k_lock || return 1
+	engine "$@"; rc=$?
+	rm -rf "$LOCKD"
+	return $rc
+}
+
+start()           { locked start; }
+stop()            { locked stop; }
+restart()         { locked restart; }
 status()          { engine status; }
-start_fw()        { engine start_fw; }
-stop_fw()         { engine stop_fw; }
-restart_fw()      { engine restart_fw; }
-start_daemons()   { engine start_daemons; }
-stop_daemons()    { engine stop_daemons; }
-restart_daemons() { engine restart_daemons; }
-reload_ifsets()   { engine reload_ifsets; }
+start_fw()        { locked start_fw; }
+stop_fw()         { locked stop_fw; }
+restart_fw()      { locked restart_fw; }
+start_daemons()   { locked start_daemons; }
+stop_daemons()    { locked stop_daemons; }
+restart_daemons() { locked restart_daemons; }
+reload_ifsets()   { locked reload_ifsets; }
 list_ifsets()     { engine list_ifsets; }
 list_table()      { engine list_table; }
 debug_rotate()    { engine debug_rotate; }

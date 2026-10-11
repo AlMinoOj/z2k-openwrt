@@ -180,6 +180,26 @@ load_modules()
 	return 0
 }
 
+# --- остановка демонов: дождаться, пока nfqws2 реально завершится ------------
+#
+# В S99 stop_all_nfqws делает `killall nfqws2` и сразу возвращается. Процесс
+# без pidfile (сирота от наложившихся перезапусков) ещё держит очередь, когда
+# start уже поднимает новый демон, — тот падает с «nfq_create_queue():
+# Operation not permitted», и служба лежит до следующего сторожа.
+stop_all_nfqws()
+{
+	local pidfile i
+	echo "Stopping all nfqws daemons"
+	for pidfile in $PIDDIR/nfqws2_*.pid; do
+		[ -f "$pidfile" ] && stop_daemon_by_pidfile "$pidfile"
+	done
+	killall nfqws2 2>/dev/null
+	i=0
+	while pidof nfqws2 >/dev/null 2>&1 && [ "$i" -lt 30 ]; do sleep 0.1 2>/dev/null || sleep 1; i=$((i + 1)); done
+	pidof nfqws2 >/dev/null 2>&1 && { echo "nfqws2 не завершился — SIGKILL"; killall -9 nfqws2 2>/dev/null; sleep 1; }
+	rm -f $PIDDIR/nfqws2_*.pid 2>/dev/null
+}
+
 # --- то, чего на OpenWrt нет -------------------------------------------------
 _z2k_scheduler_sync() { return 0; }
 _z2k_disarm_stock_lighttpd() { return 0; }

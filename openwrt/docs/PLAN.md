@@ -192,9 +192,30 @@
 - [ ] Первый релиз `v1.0.0` (после фаз 4–6 или раньше — как решит мейнтейнер);
   репозиторий публичный (raw/jsdelivr без токена).
 
-### Фаза 4. Списки и cron
-- `files/z2k-update-lists.sh` без `ndmc`; geosite; задания cron вместо
-  `z2k-scheduler.sh` (auto-update, update-lists, tcp16-probe, selfheal).
+### Фаза 4. Расписание и сторож (готово)
+- [x] `openwrt/bin/z2k-cron` вместо резидентного `files/z2k-scheduler.sh`:
+  блок в `/etc/crontabs/root` между маркерами (чужие строки не трогаются),
+  `install|remove|auto-update|lists|tcp16|watchdog`.
+  - `0 Z2K_AU_HOUR` — `z2k-update apply --auto` (задержка 0–59 мин, постоянная
+    для роутера: md5 MAC-адресов и имени);
+  - `30 3` — перемер tcp16 (пропускается, пока нет `z2k-detect` — фаза 5);
+  - `0 4` — `z2k-update-lists.sh` (geosite runetfreedom, Cloudflare, игры WARP);
+  - `*/5` — сторож: nfqws2 жив, хуки таблицы zapret2 на месте, час
+    автообновления в cron = `Z2K_AU_HOUR` конфига (меняют панель/меню),
+    `debug_rotate`.
+- [x] Шаг обновления `cron` (смена `z2k-cron` переустанавливает блок).
+- [x] `files/z2k-update-lists.sh` — portable (ndmc закрыт проверкой, перезапуск
+  через симлинк S99zapret2, канал — `Z2K_GITHUB_RAW` из конфига).
+- [x] Найдено в QEMU и исправлено: наложившиеся перезапуски (cron + списки +
+  панель) оставляли nfqws2-сироту, новый демон падал с
+  «nfq_create_queue(): Operation not permitted». Теперь `/etc/init.d/z2k`
+  сериализует изменяющие действия замком-каталогом, а `stop_all_nfqws` в
+  `s99-openwrt.sh` ждёт реального завершения nfqws2 (затем SIGKILL).
+- [x] QEMU 24.10.8: блок cron, crond; сторож поднимает убитый nfqws2 и
+  возвращает снятые правила; списки за ~100 с (RKN из geosite 74 709 доменов)
+  с перезапуском; 3 параллельных перезапуска + сторож → один nfqws2.
+- [x] Тест `test_cron` (11). busybox OpenWrt: нет `pkill`, `comm` не
+  гарантирован — в коде порта не используются.
 
 ### Фаза 5. Модули
 - Telegram-туннель и HTTP-туннель: nft `redirect to :1443/:1444`, наборы
