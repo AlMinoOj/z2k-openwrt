@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "branch": "z2k-enhanced",
-  "seq": 142,
-  "current": "p-86.18",
+  "seq": 143,
+  "current": "p-86.19",
   "install_map": {
   "files/000-zapret2.sh": ["/opt/etc/ndm/netfilter.d/000-zapret2.sh"],
   "files/S99zapret2.new": ["/opt/etc/init.d/S99zapret2"],
@@ -217,10 +217,10 @@
   "lib/auto_update.sh": "f3207a68c08cd7725177fb2f7b3ae36464b265c552d11561f3d03016b180d6c2",
   "lib/config.sh": "e1203016155fab62a7ee0351663014a1663b0dfd3cd4b5d8c5f9a2cb35813ab3",
   "lib/config_official.sh": "a378b9bdf9df5750c80bb049942ab7aa3660f30d9b26ca8c674c3faa3f7c88e7",
-  "lib/install.sh": "c16665cf67b7dee8d5b37a188024d07768c15c6b67c6e969184f84b59d359e8f",
+  "lib/install.sh": "44ea7f97950455ef30334a008663a5357eb3f033141795b359629ec4e8de71c7",
   "lib/menu.sh": "49f41c8be10b8ad5441f79dc4490a36d651f0833652dbddf4ae41e7da4d0cc38",
   "lib/strategies.sh": "5c1186493aeba1581e668246e4a23b9e0d5497905015c8dec5b8458683408c2d",
-  "lib/utils.sh": "a55e928342d1517f3db0e4bb8293755d70b0e81dbbfa51c50e426e413bbcb0d4",
+  "lib/utils.sh": "eebd3bceb95d8203cb9a06878de839150ac79653ec7b5ec894c8f1bf0243872c",
   "lib/wan.sh": "7f66e83516031bf66ea5f185804e0c90442507d7a75c95a7bc27f6b86d639129",
   "lib/webpanel.sh": "7e44a9f94e442d87f67bce091548dc482c921fad49014face9af53e8ed3e9504",
   "mtproxy-client/builds/tg-mtproxy-client-linux-386": "8548cda0ee940e0c8ecb4d00710e7f13e62565a5405d7a34d49b28068b5b8b0c",
@@ -247,7 +247,7 @@
   "webpanel/cgi/api.sh": "f4a8228f89c52d1bad1d33faeb5c3bddb1d4f352a9160d4af7602a037bbd61e6",
   "webpanel/cgi/auth.sh": "5affbff160dff2edb198789458b75232465a2264c68a95ff7a84f787ab18ec0a",
   "webpanel/init.d/S96z2k-webpanel": "8dd6c8192cd680c3fbabc4827be392525a585344231cd659d3f8b10f0292a1f3",
-  "webpanel/install.sh": "4261945565de76f5ce0cbcc2c715461c16ab9873499c831a0989e586d83da32b",
+  "webpanel/install.sh": "3f33e956a738f371dc8d3c05589dc50576151e8d2bdef8a0324db4c9ef7cc447",
   "webpanel/lighttpd.conf": "e17a7953047aef3d215cf071297b7378ccd2d0a8a7a88f76a0bcad8abfd0455f",
   "webpanel/uninstall.sh": "0288f4c4c8ae0fcd381b603abde0744ffb85936e742de3b0bb4954a6ca6198ef",
   "webpanel/www/app.js": "4acce04edc120e996e33818adf68efe0225a553676f79cb2ff59f997d5171e3a",
@@ -262,7 +262,7 @@
   "webpanel/www/fonts/FiraSans-600-latin.woff2": "f3cc7b2756c566cf8172bfd269d805c4a1eb953f6b6ce8bf2b2ddf49c5422189",
   "webpanel/www/fonts/FiraSans-700-cyrillic.woff2": "42a8013e902099b563e434d3ccb3bed87ff6d6af8d80fe51ff203f2ac487673b",
   "webpanel/www/fonts/FiraSans-700-latin.woff2": "811e73619cc2909792e8fa134c8d1ed714b898310dd4cc218fc29e40a5dc2890",
-  "webpanel/www/index.html": "21affb8978c684b724129c1163323be5a66c0949c5c9fc8df2dd1f6fd9470b49",
+  "webpanel/www/index.html": "82fc88391f516de7924d1cbf07a4ada5bccb27de09cd1ab21b7c1e3c200fd8e2",
   "webpanel/www/js/chrome.js": "3e2217758cde6d87f4809aaf65c4aafca582b936d9c53b19abb4adac1479fdef",
   "webpanel/www/js/core/api.js": "eaa798b49c02373a1cffcdee447587f9969194323dd5471ac74a07d4af7b235f",
   "webpanel/www/js/core/auth.js": "7afe5b139737783402f45fb654b9383b24d68779aae93a0f5f1847608252ad8c",
@@ -601,6 +601,7 @@
 {"v": "p-86.16", "type": "patch", "ts": "2026-10-06T11:55:04Z", "ref": "p-86.16", "desc": "Новый спонсор проекта — Кожевников. Убран сбор статистики стратегий: роутер больше ничего не отправляет на сервер проекта, пункт меню [C] и переключатель в панели удалены.", "changed_files": ["webpanel/www/index.html", "files/init.d/S99z2k-scheduler", "files/ndm/95-z2k-scheduler-watchdog.sh", "files/z2k-scheduler.sh", "lib/config_official.sh", "lib/install.sh", "lib/menu.sh", "webpanel/cgi/actions.sh", "webpanel/cgi/api.sh", "webpanel/www/js/core/toast.js", "webpanel/www/js/pages/credits.js", "webpanel/www/js/pages/dashboard.js", "webpanel/www/js/pages/toggles.js", "z2k.sh", "UPDATES.json"], "steps": ["regen-config", "validate-config", "restart-service"], "full_install": false},
 {"v": "p-86.17", "type": "patch", "ts": "2026-10-09T22:46:11Z", "ref": "p-86.17", "desc": "Новый спонсор проекта — bootnet.", "changed_files": ["webpanel/www/index.html", "lib/menu.sh", "webpanel/www/js/pages/credits.js", "UPDATES.json"], "steps": [], "full_install": false},
 {"v": "r-86.5", "type": "reinstall", "ts": "2026-10-10T12:08:31Z", "ref": "r-86.5", "desc": "Движок обхода обновлён до zapret2 1.0.5.2 с нашим исправлением: большой ClientHello из нескольких частей больше не зависает, если часть сегментов прошла мимо обхода — соединение продолжается с задержкой в доли секунды. Восстановление правил после пересборки сетевых правил Keenetic стало надёжнее: событие, пришедшее во время восстановления, больше не теряется (раньше обход мог молчать до минуты), а сами события пишутся в журнал для диагностики. Планировщик следит, чтобы программное ускорение NAT оставалось выключенным.", "changed_files": ["webpanel/www/index.html", "files/000-zapret2.sh", "files/z2k-diag.sh", "files/z2k-nfqueue-selfheal.sh", "lib/install.sh", "UPDATES.json"], "steps": [], "full_install": true},
-{"v": "p-86.18", "type": "patch", "ts": "2026-10-11T13:47:15Z", "ref": "p-86.18", "desc": "WARP можно включить для всего трафика сети: если не выбрано ни одного устройства и выключены все списки, через WARP идёт весь интернет-трафик локальной сети, а домашняя сеть и роутер остаются доступны напрямую. В диагностике теперь видно, что именно сейчас идёт через WARP.", "changed_files": ["webpanel/www/index.html", "files/z2k-diag.sh", "files/z2k-warp.sh", "webpanel/www/js/pages/warp.js", "UPDATES.json"], "steps": [], "full_install": false}
+{"v": "p-86.18", "type": "patch", "ts": "2026-10-11T13:47:15Z", "ref": "p-86.18", "desc": "WARP можно включить для всего трафика сети: если не выбрано ни одного устройства и выключены все списки, через WARP идёт весь интернет-трафик локальной сети, а домашняя сеть и роутер остаются доступны напрямую. В диагностике теперь видно, что именно сейчас идёт через WARP.", "changed_files": ["webpanel/www/index.html", "files/z2k-diag.sh", "files/z2k-warp.sh", "webpanel/www/js/pages/warp.js", "UPDATES.json"], "steps": [], "full_install": false},
+{"v": "p-86.19", "type": "patch", "ts": "2026-10-11T15:49:15Z", "ref": "p-86.19", "desc": "Установка и обновление пакетов Entware больше не зависают у провайдеров, которые режут сервер Entware: установщик z2k качает пакеты через узел проекта. Для тех, у кого не устанавливается сам Entware, появились офлайн-установщики — ссылки и инструкция в README.", "changed_files": ["webpanel/www/index.html", "lib/install.sh", "lib/utils.sh", "webpanel/install.sh", "UPDATES.json"], "steps": [], "full_install": false}
   ]
 }
