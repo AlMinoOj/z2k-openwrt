@@ -55,6 +55,9 @@ ow_layout_targets()
 
 		# --- модуль warp ---
 		files/z2k-warp.sh)           echo "$zd/z2k-warp.sh" ;;
+
+		# --- закрепление адресов Instagram (dnsmasq вместо ndmc ip host) ---
+		files/z2k-insta-ip-refresh.sh) echo "$zd/z2k-insta-ip-refresh.sh" ;;
 		openwrt/fw4/*.nft)           echo "/usr/share/nftables.d/chain-pre/forward/${p#openwrt/fw4/}" ;;
 
 		# --- библиотеки z2k (генераторы, утилиты) ---

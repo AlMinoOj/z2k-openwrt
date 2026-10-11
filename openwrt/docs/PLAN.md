@@ -217,17 +217,41 @@
 - [x] Тест `test_cron` (11). busybox OpenWrt: нет `pkill`, `comm` не
   гарантирован — в коде порта не используются.
 
-### Фаза 5. Модули
-- Telegram-туннель и HTTP-туннель: nft `redirect to :1443/:1444`, наборы
-  `tg_dc`/`tg_dc6`, UDP-маршрутизация `Z2K_TG_UDP` → nft + `ip rule`.
-- rt-proxy: dnsmasq `address=/rutracker.org/10.171.171.171` вместо
-  `ndmc ip host`, nft redirect на `:1445`.
-- WARP: `kmod-tun`, policy routing (table 989, fwmark `0x989`), nft-набор
-  вместо ipset; маршрутизация по доменам через dnsmasq-full `nftset` вместо
-  NFLOG; устройства — из DHCP-аренд/ubus вместо `ndmc show ip hotspot`.
-- z2k-detect: вызовы `iptables` (`internal/classify/raw_linux.go`,
-  `internal/prober/raw_linux.go`) → nft (патч Go) или `iptables-nft`.
-- `ndmc ip host` (Instagram, relay, GitHub) → dnsmasq.
+### Фаза 5. Модули (готово, всё на nftables — решение мейнтейнера 2026-10-12)
+Общее:
+- [x] `openwrt/lib/modules.sh`, `z2k-module list|enable|disable`: Go-бинарники
+  ставятся по выбору (флеш), только под арку роутера; по умолчанию — по
+  свободному месту (tg ≥20 МБ, rtproxy ≥30 МБ). Обновлятор и get.sh берут из
+  манифеста только нужные сборки. Пакеты модуля ставятся сами (warp:
+  kmod-tun, kmod-nfnetlink-log).
+- [x] Наши Go-сборки (detect, warpd пропатчены под nft) — `openwrt/builds`,
+  `openwrt/maint/build-go.sh` (Go 1.25.13, build-matrix.tsv); апстримные
+  `*/builds` этих модулей не едут. upstream-sync напоминает о пересборке.
+- [x] Симлинки `/opt/etc/init.d/S*` на наши procd-службы (код z2k зовёт их);
+  S51z2k-warp — на переходник (z2k-warp.sh зовёт через `sh`).
+- [x] Модули: tg, rtproxy, detect, warp. Везде логика апстрима сохранена, а
+  платформа заменена хуком/слоем; апстримные сторожа работают без правок.
+
+Модули (всё проверено в QEMU 24.10.8 без iptables, 2026-10-12):
+- [x] **tg** — `init.d/z2k-tg` (procd respawn), `lib/tg-redirect.sh` (nft-таблица
+  inet z2k_tg, те же функции, что у апстримного z2k-tg-redirect.sh), сторож
+  z2k-cron tg. Relay — сервер автора (вшит в сборку), свой — Z2K_RELAY_URL/
+  Z2K_RELAY_SECRET. core.telegram.org через туннель — 200, CONNECT_OK.
+- [x] **rtproxy** — `init.d/z2k-rtproxy`: домены -> 10.171.171.171 через UCI
+  dnsmasq, nft redirect :1445. rutracker.org — 200.
+- [x] **detect** — `internal/nftfw` (таблица inet z2k_detect), 2 правки
+  `// OPENWRT:` в апстримном Go. probe/classify работают.
+- [x] **warp** — Go: nat/nft.go, domainroute/pairs_nft.go (+2 правки);
+  шелл: хук в z2k-warp.sh -> `lib/warp-openwrt.sh` (замена ipset поверх
+  nft-сетов, перевод правил iptables->nft, log group 189); fw4 include
+  chain-pre/forward; `init.d/z2k-warp` + переходник. Регистрация Cloudflare,
+  wg (WAW), warp=on через туннель, выключение снимает всё.
+- [x] **Instagram** — хук в z2k-insta-ip-refresh.sh -> `lib/ndmc-dnsmasq.sh`
+  (функция ndmc: ip host -> UCI dnsmasq z2k_ig_*).
+- Найдено в QEMU: `policy` — зарезервированное слово nft (имя цепочки
+  нельзя); procd `status` отвечает 0 на «active with no instances».
+- [ ] Наблюдать: Z2K_WARP_VPS_PROXY по умолчанию — прокси автора с учёткой
+  (как у апстрима); решить, оставлять ли.
 
 ### Фаза 6. Вебпанель
 - uhttpd, отдельный инстанс на 8088, CGI `webpanel/cgi/api.sh`.

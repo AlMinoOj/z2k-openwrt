@@ -133,6 +133,8 @@ if [ -f "$CONFIG" ]; then
 fi
 
 # 2. ndmc must be present (this is Keenetic-only).
+# OPENWRT: на OpenWrt записи ip host — в dnsmasq (функция ndmc из z2k-openwrt). На Keenetic файла нет.
+[ -r /opt/zapret2/openwrt/lib/ndmc-dnsmasq.sh ] && . /opt/zapret2/openwrt/lib/ndmc-dnsmasq.sh
 if ! command -v ndmc >/dev/null 2>&1; then
     log "ndmc not found — not on Keenetic, exit"
     exit 0

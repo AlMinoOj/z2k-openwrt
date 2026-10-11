@@ -76,7 +76,7 @@ files/z2k-blocked-monitor.sh	portable	монитор блокировок (то�
 files/z2k-dns-check.sh	portable	проверка DNS
 files/z2k-tcp16-probe.sh	portable	z2k-detect из модуля detect (/opt/sbin); докачка через au_* апстрима сама пропускается (функций нет)
 files/z2k-diag.sh	patched	TODO фаза 7: ndmc, iptables/ipset, opkg в диагностике
-files/z2k-insta-ip-refresh.sh	patched	TODO фаза 5: ndmc ip host -> dnsmasq
+files/z2k-insta-ip-refresh.sh	patched	1 строка-хук `# OPENWRT:` -> openwrt/lib/ndmc-dnsmasq.sh (ip host -> UCI dnsmasq)
 files/z2k-tg-redirect.sh	replaced	nft-версия с теми же функциями: openwrt/lib/tg-redirect.sh
 files/z2k-tg-watchdog.sh	portable	работает через z2k-tg-redirect.sh (nft) и симлинк S98tg-tunnel; запуск — z2k-cron tg
 files/z2k-fix-tg-watchdog.sh	keenetic	исторический no-op

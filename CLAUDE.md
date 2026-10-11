@@ -36,6 +36,14 @@
 - Синхронизация: `openwrt/maint/upstream-sync.sh [тег] [--merge] [--bump-engine]`; база — `openwrt/UPSTREAM`.
 - Стенд обновлений: локальный канал (`python -m http.server` на хосте, ВМ видит его как 10.0.2.2), переменные `Z2K_OW_RAW_BASE`/`Z2K_OW_CDN_BASE`.
 
+## Модули (фаза 5)
+
+- Go-бинарники — модули (`openwrt/lib/modules.sh`, `z2k-module`): tg, rtproxy (апстримные сборки), detect, warp (наши сборки в `openwrt/builds`, `openwrt/maint/build-go.sh`).
+- Приём порта апстримного скрипта: 1 строка-хук `# OPENWRT:` перед диспетчером + слой в `openwrt/lib/*-openwrt.sh`, переопределяющий функции. Так сделаны S99 (`s99-openwrt.sh`), z2k-warp.sh (`warp-openwrt.sh`), z2k-insta-ip-refresh.sh (`ndmc-dnsmasq.sh`).
+- Go-правки: только «если есть nft — наш путь, иначе iptables апстрима», маркер `// OPENWRT:`, наш код в отдельных файлах.
+- nft: `policy` — зарезервированное слово; accept в своей таблице не отменяет reject fw4 (форвард — через include `chain-pre/forward`); большие сеты — через `nft -f -`.
+- busybox OpenWrt: нет `pkill`, `timeout`; procd `status` = 0 и при «active with no instances».
+
 ## Справка по апстриму
 
 - Устройство: `ARCHITECTURE.md`, релизы: `RELEASING.md`.
