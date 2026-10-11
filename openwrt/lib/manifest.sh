@@ -61,6 +61,12 @@ ow_steps_for()
 			echo regen-config; echo validate-config; echo restart-service ;;
 		openwrt/bin/z2k-cron)
 			echo cron ;;
+		mtproxy-client/builds/tg-mtproxy-client-linux-*|openwrt/init.d/z2k-tg|openwrt/lib/tg-redirect.sh)
+			echo restart-tg ;;
+		mtproxy-client/builds/z2k-rt-proxy-linux-*|openwrt/init.d/z2k-rtproxy)
+			echo restart-rtproxy ;;
+		openwrt/builds/z2k-warpd-linux-*|openwrt/init.d/z2k-warp)
+			echo restart-warp ;;
 		files/lua/*|files/fake/*|files/S99zapret2.new|files/lists/*|files/etc/*|extras/*|\
 		openwrt/lib/s99-openwrt.sh|openwrt/init.d/z2k)
 			echo restart-service ;;
@@ -77,6 +83,9 @@ ow_step_order()
 	echo validate-config
 	echo reset-state
 	echo restart-service
+	echo restart-tg
+	echo restart-rtproxy
+	echo restart-warp
 	echo cron
 }
 

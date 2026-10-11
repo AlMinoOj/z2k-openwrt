@@ -49,7 +49,9 @@ VER=$(awk -F '\t' '$1 == "version" { print $2; exit }' "$W/manifest")
 say "релиз $VER"
 
 n=0
-awk -F '\t' '$1 == "file" { print $2 "\t" $4 }' "$W/manifest" > "$W/files"
+# Сборки модулей не качаем все подряд (их ~150 МБ на все арки): install.sh
+# возьмёт по манифесту только нужные этому роутеру.
+awk -F '\t' '$1 == "file" && $4 !~ /\/builds\// { print $2 "\t" $4 }' "$W/manifest" > "$W/files"
 while IFS="$(printf '\t')" read -r want path; do
 	mkdir -p "$W/src/$(dirname "$path")"
 	got=""

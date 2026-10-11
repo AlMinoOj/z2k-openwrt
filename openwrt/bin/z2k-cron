@@ -49,6 +49,7 @@ block() {
 	echo "30 3 * * * $ZD/openwrt/bin/z2k-cron tcp16"
 	echo "0 4 * * * $ZD/openwrt/bin/z2k-cron lists"
 	echo "*/5 * * * * $ZD/openwrt/bin/z2k-cron watchdog"
+	echo "* * * * * $ZD/openwrt/bin/z2k-cron tg"
 	echo "$END"
 }
 
@@ -114,6 +115,14 @@ cmd_lists() {
 	sh "$ZD/z2k-update-lists.sh"
 }
 
+# Сторож Телеграм-туннеля апстрима (раз в минуту, как в планировщике z2k):
+# процесс жив, правила перехвата на месте, активная проба core.telegram.org.
+cmd_tg() {
+	[ -x /opt/sbin/tg-mtproxy-client ] && [ -f "$ZD/tg-tunnel-watchdog.sh" ] || return 0
+	grep -qx tg "$ZD/.z2k-modules" 2>/dev/null || return 0
+	sh "$ZD/tg-tunnel-watchdog.sh" >/dev/null 2>&1
+}
+
 cmd_tcp16() {
 	[ -x /opt/sbin/z2k-detect ] || [ -x "$ZD/z2k-detect" ] || return 0   # модуль детектора не установлен
 	[ -f "$ZD/z2k-tcp16-probe.sh" ] && sh "$ZD/z2k-tcp16-probe.sh"
@@ -125,6 +134,7 @@ case "${1:-}" in
 	auto-update) cmd_auto_update ;;
 	lists)       cmd_lists ;;
 	tcp16)       cmd_tcp16 ;;
+	tg)          cmd_tg ;;
 	watchdog)    cmd_watchdog ;;
 	block)       block ;;
 	*) sed -n '2,15p' "$0"; exit 2 ;;

@@ -21,6 +21,8 @@ ow_layout_targets()
 	case "$p" in
 		# --- наш рантайм ---
 		openwrt/init.d/z2k)          echo "/etc/init.d/z2k" ;;
+		openwrt/init.d/*)            echo "/etc/init.d/${p#openwrt/init.d/}" ;;
+		openwrt/lib/tg-redirect.sh)  echo "$zd/z2k-tg-redirect.sh" ;;
 		openwrt/hotplug/90-z2k)      echo "/etc/hotplug.d/iface/90-z2k" ;;
 		openwrt/lib/*.sh)            echo "$zd/$p" ;;
 		openwrt/bin/*)               echo "$zd/$p" ;;
@@ -42,6 +44,15 @@ ow_layout_targets()
 		strats_new2.txt|quic_strats.ini) echo "$zd/$p" ;;
 		extras/*)                    echo "$zd/$p" ;;
 
+		# --- бинарники модулей (ставятся по выбору, под арку роутера: modules.sh) ---
+		mtproxy-client/builds/tg-mtproxy-client-linux-*) echo "/opt/sbin/tg-mtproxy-client" ;;
+		mtproxy-client/builds/z2k-rt-proxy-linux-*)      echo "/opt/sbin/z2k-rt-proxy" ;;
+		openwrt/builds/z2k-detect-linux-*)               echo "/opt/sbin/z2k-detect" ;;
+		openwrt/builds/z2k-warpd-linux-*)                echo "/opt/sbin/z2k-warpd" ;;
+
+		# --- модуль tg ---
+		files/z2k-tg-watchdog.sh)    echo "$zd/tg-tunnel-watchdog.sh" ;;
+
 		# --- библиотеки z2k (генераторы, утилиты) ---
 		lib/install.sh|lib/release_map.sh|lib/auto_update.sh) ;;
 		lib/*.sh)                    echo "$zd/$p" ;;
@@ -55,13 +66,18 @@ ow_layout_targets()
 	esac
 }
 
+# ow_layout_is_build <путь> — сборка модуля (ставится через modules.sh).
+ow_layout_is_build() { case "$1" in */builds/*) return 0 ;; esac; return 1; }
+
 # ow_layout_files <корень репозитория> — все файлы репозитория, которые едут
-# на роутер (путь относительно корня), по одному в строке.
+# на роутер (путь относительно корня), по одному в строке. Сборки модулей
+# сюда не входят — их ставит ow_module_install под арку роутера.
 ow_layout_files()
 {
 	local root="$1" f
 	( cd "$root" && find openwrt files lib strats_new2.txt quic_strats.ini extras -type f 2>/dev/null ) |
 	while IFS= read -r f; do
+		ow_layout_is_build "$f" && continue
 		[ -n "$(ow_layout_targets "$f")" ] && echo "$f"
 	done
 }

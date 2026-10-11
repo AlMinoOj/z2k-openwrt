@@ -31,6 +31,8 @@ OWL="${Z2K_OW_LIB:-$R$ZD/openwrt/lib}"
 . "$OWL/engine.sh"
 . "$OWL/manifest.sh"
 . "$OWL/postinstall.sh"
+. "$OWL/modules.sh"
+OW_ZD="$R$ZD"
 
 TMP="${Z2K_OW_TMP:-/tmp/z2k-update}"
 STATE="$R$ZD/.z2k-installed"
@@ -101,6 +103,8 @@ plan() {
 	local sha mode path targets t first
 	: > "$TMP/plan"; : > "$TMP/orphans"
 	ow_mf_files "$1" | while IFS="$(printf '\t')" read -r sha mode path targets; do
+		# Сборки модулей — только включённых и только под эту арку.
+		ow_mf_file_applies "$path" "$1" || continue
 		first=${targets%% *}
 		if [ "$(ow_sha256 "$R$first")" != "$sha" ]; then
 			printf '%s\t%s\t%s\t%s\n' "$sha" "$mode" "$path" "$targets" >> "$TMP/plan"; continue
@@ -170,6 +174,12 @@ run_steps() {
 				if service_enabled; then "$INIT" restart >/dev/null 2>&1 || rc=1
 				else log "обход выключен в конфиге — не перезапускаю"; fi ;;
 			cron) sh "$ZD/openwrt/bin/z2k-cron" install >/dev/null 2>&1 || rc=1 ;;
+			restart-tg|restart-rtproxy|restart-warp)
+				# Модуль выключен — его службу не трогаем.
+				local svc; svc=$(ow_module_field "${s#restart-}" 4)
+				if ow_module_enabled "${s#restart-}" && [ -x "$R/etc/init.d/$svc" ]; then
+					"$R/etc/init.d/$svc" restart >/dev/null 2>&1 || rc=1
+				fi ;;
 			*) log "неизвестный шаг: $s"; rc=1 ;;
 		esac
 		[ "$rc" = 0 ] || { log "шаг $s не удался"; return 1; }

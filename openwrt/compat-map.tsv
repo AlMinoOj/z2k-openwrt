@@ -24,7 +24,7 @@
 #   openwrt   наш собственный код порта.
 
 # --- наш порт ------------------------------------------------------------
-openwrt/*	openwrt	код и документация порта
+openwrt/*	openwrt	код и документация порта (openwrt/builds — наши сборки detect/warpd)
 CLAUDE.md	openwrt	правила проекта
 .github/README.md	openwrt	README форка
 
@@ -65,8 +65,8 @@ files/z2k-nfqueue-selfheal.sh	replaced	страховка от вайпа NDM; �
 files/z2k-scheduler.sh	replaced	резидентный планировщик; на OpenWrt — cron: openwrt/bin/z2k-cron
 files/z2k-auto-update.sh	replaced	ночной запуск: z2k-update apply --auto (cron, фаза 4)
 files/init.d/S99z2k-scheduler	replaced	cron вместо планировщика
-files/init.d/S98tg-tunnel	replaced	procd: openwrt/init.d/z2k-tg-tunnel (фаза 5)
-files/init.d/S97z2k-http-tunnel	replaced	procd: openwrt/init.d/z2k-http-tunnel (фаза 5)
+files/init.d/S98tg-tunnel	replaced	procd: openwrt/init.d/z2k-tg (симлинк /opt/etc/init.d/S98tg-tunnel)
+files/init.d/S97z2k-http-tunnel	replaced	устаревший у апстрима (порт 1444 обслуживает S98tg-tunnel) — у нас z2k-tg
 files/init.d/S96z2k-rt-proxy	replaced	procd: openwrt/init.d/z2k-rt-proxy (фаза 5)
 files/init.d/S51z2k-warp	replaced	procd: openwrt/init.d/z2k-warp (фаза 5)
 files/z2k-update-lists.sh	portable	ndmc закрыт проверкой наличия, перезапуск через /opt/etc/init.d/S99zapret2 (симлинк), канал — Z2K_GITHUB_RAW из конфига
@@ -77,14 +77,14 @@ files/z2k-dns-check.sh	portable	проверка DNS
 files/z2k-tcp16-probe.sh	patched	TODO фаза 5: нужен z2k-detect; докачка бинарника через au_* апстрима — заменить на наш канал
 files/z2k-diag.sh	patched	TODO фаза 7: ndmc, iptables/ipset, opkg в диагностике
 files/z2k-insta-ip-refresh.sh	patched	TODO фаза 5: ndmc ip host -> dnsmasq
-files/z2k-tg-redirect.sh	patched	TODO фаза 5: iptables REDIRECT/ipset -> nft
-files/z2k-tg-watchdog.sh	patched	TODO фаза 5: перезапуск и проверки правил
-files/z2k-fix-tg-watchdog.sh	patched	TODO фаза 5: проверка правил
+files/z2k-tg-redirect.sh	replaced	nft-версия с теми же функциями: openwrt/lib/tg-redirect.sh
+files/z2k-tg-watchdog.sh	portable	работает через z2k-tg-redirect.sh (nft) и симлинк S98tg-tunnel; запуск — z2k-cron tg
+files/z2k-fix-tg-watchdog.sh	keenetic	исторический no-op
 files/z2k-warp.sh	patched	TODO фаза 5: iptables/ipset/ndmc/NFLOG -> nft/dnsmasq/ubus
 files/z2k-warp-list-filter.awk	portable	фильтр списков WARP
 
 # --- Go: собранные бинарники и исходники ------------------------------------
-mtproxy-client/builds/*	portable	статичные ELF; секрет туннеля вшит апстримом — пересобирать нельзя
+mtproxy-client/builds/*	portable	модули tg/rtproxy: статичные ELF, секрет туннеля вшит апстримом — берём как есть
 z2k-verify/builds/*	portable	проверка подписи манифеста (апстрим на роутер не ставит, форк ставит)
 z2k-detect/builds/*	patched	TODO фаза 5: детектор вызывает iptables — пересборка из патченных исходников
 z2k-warpd/builds/*	patched	TODO фаза 5: warpd вставляет iptables-правила — пересборка из патченных исходников

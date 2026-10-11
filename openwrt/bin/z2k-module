@@ -1,0 +1,39 @@
+#!/bin/sh
+# z2k-module — необязательные модули z2k-openwrt.
+#   z2k-module list               что есть и что включено
+#   z2k-module enable <модуль>    скачать бинарник (из канала, с проверкой sha) и запустить
+#   z2k-module disable <модуль>   остановить и удалить бинарник
+# Модули: tg (Телеграм-туннель), rtproxy (мост к RuTracker),
+#         detect (детектор блокировок), warp (Cloudflare WARP).
+set -u
+ZD=/opt/zapret2
+L=$ZD/openwrt/lib
+. $L/platform.sh; . $L/channel.sh; . $L/engine.sh; . $L/manifest.sh; . $L/modules.sh
+OW_ZD=$ZD
+
+case "${1:-}" in
+	list)
+		for m in $OW_ALL_MODULES; do
+			t=$(ow_module_field "$m" 3)
+			st="выключен"; ow_module_enabled "$m" && st="включён"
+			[ -x "$t" ] && sz="$(du -k "$t" | cut -f1) КБ" || sz="не установлен"
+			printf '%-8s %-9s %s\n' "$m" "$st" "$sz"
+		done
+		echo "свободно на флеше: $(ow_free_kb /overlay) КБ" ;;
+	enable)
+		m="${2:-}"; ow_module_info "$m" >/dev/null || { echo "неизвестный модуль: $m" >&2; exit 2; }
+		ver=$(awk '$1 == "version" { print $2 }' $ZD/.z2k-installed 2>/dev/null)
+		[ -f $ZD/.z2k-manifest ] && [ -n "$ver" ] && [ "$ver" != dev ] ||
+			{ echo "нет манифеста установленного релиза — сначала z2k-update apply" >&2; exit 1; }
+		ow_module_install "$m" "" $ZD/.z2k-manifest "$ver" || exit 1
+		ow_module_set "$m" 1
+		ow_module_service_start "$m"
+		echo "модуль $m включён" ;;
+	disable)
+		m="${2:-}"; ow_module_info "$m" >/dev/null || { echo "неизвестный модуль: $m" >&2; exit 2; }
+		ow_module_service_stop "$m"
+		rm -f "$(ow_module_field "$m" 3)"
+		ow_module_set "$m" 0
+		echo "модуль $m выключен" ;;
+	*) sed -n '2,8p' "$0"; exit 2 ;;
+esac

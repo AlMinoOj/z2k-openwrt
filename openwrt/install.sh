@@ -22,6 +22,7 @@ OW_ZD="$ZD"
 . "$ROOT/openwrt/lib/layout.sh"
 . "$ROOT/openwrt/lib/manifest.sh"
 . "$ROOT/openwrt/lib/postinstall.sh"
+. "$ROOT/openwrt/lib/modules.sh"
 
 say()  { echo "[z2k] $*"; }
 warn() { echo "[z2k] ВНИМАНИЕ: $*" >&2; }
@@ -88,11 +89,7 @@ for s in 50-stun4all 50-discord-media; do
 	[ -f "$ZD/init.d/custom.d.examples.linux/$s" ] && cp -f "$ZD/init.d/custom.d.examples.linux/$s" "$CUSTOM/$s"
 done
 
-# Совместимость: код z2k (панель, меню, рантайм-скрипты) по умолчанию зовёт
-# /opt/etc/init.d/S99zapret2. На OpenWrt этого каталога никто не использует.
-mkdir -p /opt/etc/init.d /opt/etc/zapret2
-ln -sf /etc/init.d/z2k /opt/etc/init.d/S99zapret2
-
+mkdir -p /opt/etc/zapret2
 echo "$Z2K_OW_CHANNEL" > "$ZD/.z2k-branch"
 ow_postinstall "$ZD"
 
@@ -138,9 +135,30 @@ ow_z2k_generate || die "генерация конфига не удалась"
 # --- 7. автозапуск и старт ------------------------------------------------------------------
 /etc/init.d/z2k enable
 sh "$ZD/openwrt/bin/z2k-cron" install
+
+# --- 7a. модули (Go-бинарники по выбору) --------------------------------------------
+# Z2K_OW_MODULES="tg rtproxy" — явно; "none" — без модулей. Иначе — что было
+# включено раньше, а на новой установке — по свободному месту.
+OW_ZD="$ZD"
+MODS="${Z2K_OW_MODULES:-}"
+[ -n "$MODS" ] || { [ -f "$ZD/.z2k-modules" ] && MODS=$(ow_modules_enabled | tr '
+' ' '); }
+[ -n "$MODS" ] || MODS=$(ow_modules_default | tr '
+' ' ')
+[ "$MODS" = none ] && MODS=""
+MVER=""; [ -n "${Z2K_OW_MANIFEST:-}" ] && MVER=$(ow_mf_get "$Z2K_OW_MANIFEST" version)
+: > "$ZD/.z2k-modules"
+for m in $MODS; do
+	if ow_module_install "$m" "$ROOT" "${Z2K_OW_MANIFEST:-}" "$MVER"; then
+		ow_module_set "$m" 1; say "модуль $m установлен"
+	else
+		warn "модуль $m не установлен (позже: z2k-module enable $m)"
+	fi
+done
 if [ -z "${Z2K_OW_NO_START:-}" ]; then
 	say "применяю стратегии и запускаю службу"
 	ow_z2k_apply_strategies || warn "применение стратегий вернуло ошибку — смотрите вывод выше"
+	for m in $(ow_modules_enabled); do ow_module_service_start "$m"; done
 	if /etc/init.d/z2k status >/dev/null 2>&1; then
 		say "готово: обход работает (nft list table inet zapret2 — правила)"
 	else

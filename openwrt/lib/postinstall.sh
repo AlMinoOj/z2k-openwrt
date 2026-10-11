@@ -29,11 +29,29 @@ ow_blob_aliases()
 	return 0
 }
 
+# Код z2k (панель, меню, сторожа, рантайм-скрипты) зовёт службы по путям
+# Entware /opt/etc/init.d/S*. На OpenWrt этот каталог больше никто не
+# использует — кладём туда ссылки на наши procd-службы (rc.common определяет
+# имя службы по цели ссылки).
+OW_COMPAT_INITS="S99zapret2:z2k S98tg-tunnel:z2k-tg S96z2k-rt-proxy:z2k-rtproxy S51z2k-warp:z2k-warp"
+
+ow_compat_inits()
+{
+	local pair
+	mkdir -p /opt/etc/init.d
+	for pair in $OW_COMPAT_INITS; do
+		[ -x "/etc/init.d/${pair#*:}" ] && ln -sf "/etc/init.d/${pair#*:}" "/opt/etc/init.d/${pair%%:*}"
+	done
+	return 0
+}
+
 # ow_postinstall <ZAPRET_BASE> — всё вместе.
 ow_postinstall()
 {
 	local zd="${1:-/opt/zapret2}"
 	ow_blob_aliases "$zd"
+	ow_compat_inits
+	[ -f "$zd/openwrt/bin/z2k-module" ] && ln -sf "$zd/openwrt/bin/z2k-module" /usr/bin/z2k-module 2>/dev/null
 	# CLI обновлений.
 	[ -f "$zd/openwrt/bin/z2k-update" ] && ln -sf "$zd/openwrt/bin/z2k-update" /usr/bin/z2k-update 2>/dev/null
 	return 0
