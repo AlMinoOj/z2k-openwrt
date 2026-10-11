@@ -96,6 +96,7 @@ SHIM
 run_refresh() {
     mk_env
     cat > "$TMP/r.sh" <<EOF
+$(extract_fn z2k_opkg "$WP")
 $(extract_fn refresh_opkg_lists "$WP")
 # Point the function at the fixture instead of the live system config.
 refresh_opkg_lists
@@ -146,6 +147,7 @@ esac
 # =============================================================================
 mk_env
 cat > "$TMP/ro.sh" <<EOF
+$(extract_fn z2k_opkg "$WP")
 $(extract_fn refresh_opkg_lists "$WP")
 $(extract_fn run_opkg "$WP")
 run_opkg install lighttpd
@@ -214,6 +216,7 @@ else
     no "harness: the no-op sed stub is in effect" "file unchanged" "$(cat "$TMP/noop.probe")"
 fi
 cat > "$TMP/nf.sh" <<EOF
+$(extract_fn z2k_opkg "$WP")
 $(extract_fn refresh_opkg_lists "$WP")
 refresh_opkg_lists
 EOF

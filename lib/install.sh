@@ -520,7 +520,7 @@ step_update_packages() {
 
     # Попытка обновления с полным перехватом вывода
     local opkg_output
-    opkg_output=$(opkg update 2>&1)
+    opkg_output=$(z2k_opkg update 2>&1)
     local exit_code=$?
 
     # Показать вывод opkg
@@ -567,7 +567,7 @@ step_update_packages() {
                 print_info "Повторная попытка обновления с новым зеркалом..."
 
                 # Повторить opkg update
-                opkg_output=$(opkg update 2>&1)
+                opkg_output=$(z2k_opkg update 2>&1)
                 exit_code=$?
 
                 echo "$opkg_output"
@@ -871,7 +871,7 @@ kmod_ndms
             print_info "$pkg уже установлен"
         else
             print_info "Установка $pkg..."
-            opkg install "$pkg" || print_warning "Не удалось установить $pkg"
+            z2k_opkg install "$pkg" || print_warning "Не удалось установить $pkg"
         fi
     done
 
@@ -932,7 +932,7 @@ kmod_ndms
     # Установить критичные пакеты если нужно (только ipset для Keenetic)
     if [ -n "$critical_packages" ]; then
         print_info "Установка:$critical_packages"
-        if opkg install $critical_packages; then
+        if z2k_opkg install $critical_packages; then
             print_success "Критичные пакеты установлены"
         else
             print_error "Не удалось установить критичные пакеты"
@@ -977,8 +977,8 @@ kmod_ndms
     # error handling, warning при ошибке, install продолжается.
     if ! opkg list-installed | grep -q "^openssl-util "; then
         print_info "Ставим openssl-util (для VPS-refresh Instagram-IP)..."
-        opkg update >/dev/null 2>&1
-        if opkg install openssl-util >/dev/null 2>&1; then
+        z2k_opkg update >/dev/null 2>&1
+        if z2k_opkg install openssl-util >/dev/null 2>&1; then
             print_success "openssl-util установлен"
         else
             print_warning "openssl-util не установился — Instagram-IP не будет обновляться с VPS"
@@ -1008,7 +1008,7 @@ kmod_ndms
                 read -r answer </dev/tty
                 case "$answer" in
                     [Yy]*)
-                        if opkg install --force-overwrite gzip; then
+                        if z2k_opkg install --force-overwrite gzip; then
                             print_success "GNU gzip установлен"
                         else
                             print_warning "Не удалось установить GNU gzip"
@@ -1037,7 +1037,7 @@ kmod_ndms
                 read -r answer </dev/tty
                 case "$answer" in
                     [Yy]*)
-                        if opkg install --force-overwrite coreutils-sort; then
+                        if z2k_opkg install --force-overwrite coreutils-sort; then
                             print_success "GNU sort установлен"
                         else
                             print_warning "Не удалось установить GNU sort"

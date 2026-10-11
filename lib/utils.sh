@@ -98,6 +98,95 @@ _z2k_vps_gh_resolve() {
     done
 }
 
+# OPKG ЧЕРЕЗ УЗЕЛ. Замер 11.10.2026 на роутере владельца (KN-1811, Entware
+# aarch64): bin.entware.net у части провайдеров режется по объёму — список
+# пакетов обрывается на 31 КБ из 378 КБ, и opkg висит без конца, потому что
+# busybox wget он зовёт без таймаута (обычный `opkg update` провисел 326 с, пока
+# его не сняли). Через узел — оба фида за 1 с. Таймаутом самого busybox wget не
+# спастись: 1.37.0-6 падает с segfault на ключе -T.
+# Поэтому НАШИ вызовы opkg получают свой `wget`: временный скрипт впереди PATH,
+# который качает curl'ом и обрывает застрявшую загрузку по скорости, а хосты
+# *.entware.net — через прокси узла (tinyproxy :8119, фильтр пропускает
+# entware.net и cloudflareclient.com). Узел не ответил — curl напрямую; curl нет
+# или opkg передал незнакомый ключ — настоящий wget.
+#
+# Глобальный opkg.conf не трогаем: свои `opkg update` человек делает как раньше.
+# http_proxy на весь установщик выставлять нельзя: его читает и curl в z2k_fetch,
+# и GitHub упёрся бы в фильтр прокси.
+Z2K_OPKG_PROXY="${Z2K_OPKG_PROXY:-http://z2kwarp:z2kW4rpR3g2026@${Z2K_VPS_GH_IP:-213.176.74.63}:8119}"
+
+# Текст временного wget. Адрес прокси вшивается при создании: скрипт
+# самодостаточен, его можно получить и без остального utils.sh (панель).
+z2k_opkg_shim() {
+    printf '#!/bin/sh\n'
+    printf 'proxy="${Z2K_OPKG_PROXY:-%s}"\n' "$Z2K_OPKG_PROXY"
+    cat <<'SHIM'
+# Временный wget для opkg от z2k (z2k_opkg в lib/utils.sh): качает curl'ом,
+# хосты *.entware.net — через прокси узла z2k, при отказе узла — напрямую.
+real="${Z2K_REAL_WGET:-}"
+fallback() {
+    [ -n "$real" ] && [ -x "$real" ] && exec "$real" "$@"
+    echo "z2k: нечем скачать (нет ни curl, ни wget)" >&2
+    exit 1
+}
+command -v curl >/dev/null 2>&1 || fallback "$@"
+# Ключи, с которыми opkg зовёт wget: -q, --no-check-certificate, --timeout N,
+# -Y on (есть прокси в opkg.conf), -O файл, URL. Всё прочее — не наш случай.
+out=""; url=""; ins=""; to=30; want=""
+for a in "$@"; do
+    if [ -n "$want" ]; then
+        case "$want" in
+            -O) out="$a" ;;
+            -T|--timeout) to="$a" ;;
+        esac
+        want=""; continue
+    fi
+    case "$a" in
+        -q) ;;
+        -O|-T|--timeout|-Y) want="$a" ;;
+        --timeout=*) to="${a#*=}" ;;
+        --no-check-certificate) ins=1 ;;
+        -*) fallback "$@" ;;
+        *) [ -z "$url" ] || fallback "$@"; url="$a" ;;
+    esac
+done
+[ -n "$out" ] && [ -n "$url" ] || fallback "$@"
+case "$to" in ''|*[!0-9]*) to=30 ;; esac
+host=${url#*://}; host=${host%%/*}; host=${host##*@}; host=${host%%:*}
+host=$(printf '%s' "$host" | tr 'A-Z' 'a-z')
+# Застрявшую загрузку (блок по объёму) обрываем по скорости, а не по общему
+# таймауту: большой пакет на медленной линии не должен падать.
+get() {
+    if [ -n "$ins" ]; then
+        curl -fsSL -k --connect-timeout "$to" --speed-limit 1024 --speed-time 30 "$@" -o "$out" "$url"
+    else
+        curl -fsSL --connect-timeout "$to" --speed-limit 1024 --speed-time 30 "$@" -o "$out" "$url"
+    fi
+}
+case "$host" in
+    entware.net|*.entware.net)
+        [ -n "$proxy" ] && get --proxy "$proxy" && exit 0 ;;
+esac
+get
+SHIM
+}
+
+# opkg с нашим временным wget. Аргументы и код возврата — как у opkg.
+z2k_opkg() {
+    local _d _rc _real
+    _real=$(command -v wget 2>/dev/null)
+    _d=$(mktemp -d /tmp/z2k-opkg.XXXXXX 2>/dev/null) || { opkg "$@"; return; }
+    if z2k_opkg_shim > "$_d/wget" 2>/dev/null && chmod 755 "$_d/wget"; then
+        env PATH="$_d:$PATH" Z2K_REAL_WGET="$_real" opkg "$@"
+        _rc=$?
+    else
+        opkg "$@"
+        _rc=$?
+    fi
+    rm -rf "$_d"
+    return "$_rc"
+}
+
 # Файлы конфигурации
 STRATEGIES_CONF="${CONFIG_DIR}/strategies.conf"
 CURRENT_STRATEGY_FILE="${CONFIG_DIR}/current_strategy"

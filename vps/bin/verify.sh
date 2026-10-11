@@ -27,6 +27,7 @@ config/sysctl.d/99-z2k-relay.conf:/etc/sysctl.d/99-z2k-relay.conf
 config/sysctl.d/99-z2k-tcp.conf:/etc/sysctl.d/99-z2k-tcp.conf
 config/sysctl.conf:/etc/sysctl.conf
 config/tinyproxy.conf:/etc/tinyproxy/tinyproxy.conf
+config/tinyproxy-z2k-filter:/etc/tinyproxy/z2k-filter
 config/systemd/z2k-relay@.service:/etc/systemd/system/z2k-relay@.service
 config/systemd/z2k-relay@.service.d/extra-flags.conf:/etc/systemd/system/z2k-relay@.service.d/extra-flags.conf
 config/z2k/relay-a.env:/etc/z2k/relay-a.env

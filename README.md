@@ -111,6 +111,41 @@ opkg update
 opkg install coreutils-sort curl grep gzip ipset iptables kmod_ndms xtables-addons_legacy openssl-util
 ```
 
+#### Если `opkg update` висит или обрывается
+
+У части провайдеров сервер пакетов Entware (`bin.entware.net`) обрывает загрузку на первых десятках килобайт, и `opkg` висит без конца. Пропустите `opkg` через узел проекта z2k — он пропускает только серверы Entware:
+
+```bash
+export http_proxy=http://z2kwarp:z2kW4rpR3g2026@213.176.74.63:8119
+opkg update
+opkg install coreutils-sort curl grep gzip ipset iptables kmod_ndms xtables-addons_legacy openssl-util
+unset http_proxy
+```
+
+Сам установщик z2k ставит и обновляет пакеты через узел и без этого шага.
+
+Зеркало вместо узла подойдёт, только если у вас стоит полноценный wget (пакет `wget-ssl`): встроенный в Entware busybox wget не умеет https, а по http зеркало ему отказывает.
+
+```bash
+sed -i 's|http://bin.entware.net|https://mirrors.bfsu.edu.cn/entware|g' /opt/etc/opkg.conf
+opkg update
+```
+
+Вернуть основной сервер: `sed -i 's|https://mirrors.bfsu.edu.cn/entware|http://bin.entware.net|g' /opt/etc/opkg.conf`
+
+#### Если Entware не устанавливается
+
+Официальный установщик Entware во время установки сам качает пакеты с того же `bin.entware.net`, поэтому на таких линиях установка обрывается. Для этого случая есть офлайн-установщики: это официальный установщик Entware, в который заранее положены его базовые пакеты и `curl`, — сеть при установке не нужна. Они собираются автоматически раз в неделю, каждый пакет сверяется с официальным индексом Entware, и каждый архив перед публикацией устанавливается без сети в проверочной среде.
+
+1. Скачайте архив для архитектуры своей модели (архитектуру укажет официальная инструкция Keenetic выше):
+   - ARM64 — [aarch64-installer.tar.gz](https://github.com/necronicle/z2k/releases/download/entware-offline/aarch64-installer.tar.gz)
+   - MIPSel — [mipsel-installer.tar.gz](https://github.com/necronicle/z2k/releases/download/entware-offline/mipsel-installer.tar.gz)
+   - MIPS — [mips-installer.tar.gz](https://github.com/necronicle/z2k/releases/download/entware-offline/mips-installer.tar.gz)
+2. Дальше — как в официальной инструкции: положите архив в папку `install` на USB-накопителе и выберите накопитель в настройках компонента OPKG.
+3. После установки `opkg` снова смотрит на `bin.entware.net`; ключи SSH создаются на самом роутере.
+
+Состав пакетов и контрольные суммы — на [странице релиза](https://github.com/necronicle/z2k/releases/tag/entware-offline).
+
 ### 3) Установка z2k
 
 ```bash

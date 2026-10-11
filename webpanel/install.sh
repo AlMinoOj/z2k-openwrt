@@ -282,13 +282,28 @@ mkdir -p /opt/tmp 2>/dev/null || true
 # lighttpd_1.4.79-1 while the feed has 1.4.82-2 -> plain 404, surfaced as
 # "wget returned 1 / Perhaps you need to run 'opkg update'". Refresh the
 # list once and retry the same command instead of dead-ending the install.
+# opkg через узел: z2k_opkg из lib/utils.sh (временный wget на curl, хосты
+# *.entware.net — через прокси узла z2k; почему — см. там). Этот установщик
+# utils.sh не подключает и работает под set -eu, поэтому z2k_opkg зовётся в
+# отдельном sh. Берём utils.sh из того же дерева, что и панель, или из
+# установленного z2k; нет ни того, ни другого — обычный opkg.
+z2k_opkg() {
+    local u
+    for u in "$SRC_DIR/../lib/utils.sh" /opt/zapret2/lib/utils.sh; do
+        [ -r "$u" ] || continue
+        sh -c '. "$1" >/dev/null 2>&1; shift; command -v z2k_opkg >/dev/null 2>&1 || exec opkg "$@"; z2k_opkg "$@"' sh "$u" "$@"
+        return
+    done
+    opkg "$@"
+}
+
 opkg_list_refreshed=0
 refresh_opkg_lists() {
     [ "$opkg_list_refreshed" = 1 ] && return 1
     opkg_list_refreshed=1
     echo "  package list looks stale — running opkg update..."
     local ulog=/tmp/z2k-webpanel-opkg-update.log
-    opkg update >"$ulog" 2>&1 && return 0
+    z2k_opkg update >"$ulog" 2>&1 && return 0
 
     # entware.diversion.ch redirects 301 http->https on every file. opkg
     # shells out to wget, and on Keenetic that is usually busybox wget with
@@ -314,7 +329,7 @@ refresh_opkg_lists() {
             echo "    sed -i 's|entware.diversion.ch|bin.entware.net|g' /opt/etc/opkg.conf && opkg update"
             return 0
         fi
-        opkg update >"$ulog" 2>&1 && return 0
+        z2k_opkg update >"$ulog" 2>&1 && return 0
     fi
     tail -6 "$ulog" | sed 's/^/    /'
     return 0
@@ -322,7 +337,7 @@ refresh_opkg_lists() {
 
 run_opkg() {
     local log=/tmp/z2k-webpanel-opkg.log
-    if opkg "$@" >"$log" 2>&1; then
+    if z2k_opkg "$@" >"$log" 2>&1; then
         tail -3 "$log"
         return 0
     fi
@@ -336,7 +351,7 @@ run_opkg() {
     # because refresh_opkg_lists refuses its second call.
     if grep -qiE "Failed to download|need to run 'opkg update'|Unknown package|Cannot install package|Cannot find package" "$log" \
        && refresh_opkg_lists; then
-        if opkg "$@" >"$log" 2>&1; then
+        if z2k_opkg "$@" >"$log" 2>&1; then
             tail -3 "$log"
             return 0
         fi
