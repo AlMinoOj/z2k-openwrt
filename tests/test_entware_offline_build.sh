@@ -103,6 +103,12 @@ eq "opkg.conf возвращается перед последним шагом"
 eq "локальный фид и его списки убираются" "1" "$(grep -c '^rm -rf /opt/var/z2k-offline /opt/var/opkg-lists$' "$SB/x/bin/install")"
 eq "ключей SSH в архиве нет" "0" "$(grep -c 'dropbear_.*_host_key' "$SB/list")"
 
+# --- 1б. относительный каталог вывода (так его передаёт workflow) -------------
+rm -rf "$SB/rel"; mkdir -p "$SB/rel"
+(cd "$SB/rel" && ENTWARE_BASE="file://$SB/mirror" sh "$BUILD" aarch64 out >"$SB/build.log" 2>&1); rc=$?
+eq "относительный вывод: rc 0" "0" "$rc"
+eq "относительный вывод: архив на месте" "yes" "$([ -s "$SB/rel/out/aarch64-installer.tar.gz" ] && echo yes || echo no)"
+
 # --- 2. подменённый пакет — отказ ----------------------------------------------
 mk_feed; mk_installer "alpha beta kpkg"; printf 'подмена\n' > "$M/gamma_2.0_aarch64-3.10.ipk"; seal
 build; rc=$?

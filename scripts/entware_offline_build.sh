@@ -37,6 +37,8 @@ OFF=/opt/var/z2k-offline
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 mkdir -p "$out" "$work/root"
+# Путь вывода — абсолютный: архив пакуется из каталога сборки (cd ниже).
+out=$(cd "$out" && pwd)
 get() { curl -fsSL --retry 3 --connect-timeout 20 -o "$1" "$2"; }
 
 echo "== $arch: официальный установщик и индексы"
