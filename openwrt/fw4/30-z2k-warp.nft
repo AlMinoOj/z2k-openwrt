@@ -1,0 +1,5 @@
+# z2k-openwrt (модуль warp): разрешить форвард LAN -> туннель WARP (z2ktunN).
+# Вставляется fw4 в начало его цепочки forward (chain-pre): accept в своей
+# таблице не отменил бы reject fw4 — интерфейс туннеля не входит ни в одну зону.
+oifname "z2ktun*" meta mark & 0x989 == 0x989 accept comment "z2k-warp: lan -> warp"
+iifname "z2ktun*" ct state established,related accept comment "z2k-warp: warp -> lan"

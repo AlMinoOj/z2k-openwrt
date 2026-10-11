@@ -33,14 +33,15 @@ ow_blob_aliases()
 # Entware /opt/etc/init.d/S*. На OpenWrt этот каталог больше никто не
 # использует — кладём туда ссылки на наши procd-службы (rc.common определяет
 # имя службы по цели ссылки).
-OW_COMPAT_INITS="S99zapret2:z2k S98tg-tunnel:z2k-tg S96z2k-rt-proxy:z2k-rtproxy S51z2k-warp:z2k-warp"
+# S51z2k-warp — на переходник: z2k-warp.sh зовёт службу через `sh`.
+OW_COMPAT_INITS="S99zapret2:/etc/init.d/z2k S98tg-tunnel:/etc/init.d/z2k-tg S96z2k-rt-proxy:/etc/init.d/z2k-rtproxy S51z2k-warp:/opt/zapret2/openwrt/bin/z2k-warp-init"
 
 ow_compat_inits()
 {
 	local pair
 	mkdir -p /opt/etc/init.d
 	for pair in $OW_COMPAT_INITS; do
-		[ -x "/etc/init.d/${pair#*:}" ] && ln -sf "/etc/init.d/${pair#*:}" "/opt/etc/init.d/${pair%%:*}"
+		[ -x "${pair#*:}" ] && ln -sf "${pair#*:}" "/opt/etc/init.d/${pair%%:*}"
 	done
 	return 0
 }

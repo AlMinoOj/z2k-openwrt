@@ -1,0 +1,4 @@
+#!/bin/sh
+# Переходник к procd-службе WARP для кода z2k: z2k-warp.sh зовёт службу как
+# `sh $WARP_INIT start|stop|status`, а скрипт rc.common через `sh` не работает.
+exec /etc/init.d/z2k-warp "$@"

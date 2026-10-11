@@ -1,0 +1,36 @@
+#!/bin/sh /etc/rc.common
+# z2k-openwrt: Cloudflare WARP (модуль warp) — демон z2k-warpd.
+#
+# Аналог files/init.d/S51z2k-warp апстрима, на procd. Правила маршрутизации,
+# списки и самовосстановление ведёт z2k-warp.sh (вызывает службу через
+# переходник openwrt/bin/z2k-warp-init); маскарадинг и MSS для туннеля
+# демон ставит сам (nft-таблица inet z2k_warpd).
+
+START=51
+STOP=49
+USE_PROCD=1
+
+BIN=/opt/sbin/z2k-warpd
+CONF=/opt/zapret2/config
+
+conf_get() { sed -n "s/^$1=//p" "$CONF" 2>/dev/null | head -n 1 | tr -d "\"' "; }
+
+start_service()
+{
+	[ -x "$BIN" ] || return 0
+	[ "$(conf_get GAME_WARP_ENABLED)" = 1 ] || { echo "z2k-warpd: WARP выключен (GAME_WARP_ENABLED=1 включает)"; return 0; }
+	mkdir -p /tmp/z2k-warp
+
+	local proxy transport
+	proxy=$(sed -n 's/^Z2K_WARP_VPS_PROXY=//p' "$CONF" 2>/dev/null | head -n 1 | tr -d '"')
+	transport=$(conf_get Z2K_WARP_TRANSPORT)
+
+	procd_open_instance warpd
+	procd_set_param command "$BIN" run
+	# Прокси регистрации по умолчанию — как у апстрима (S51z2k-warp).
+	procd_set_param env GODEBUG=asyncpreemptoff=1 \
+		Z2K_WARP_VPS_PROXY="${proxy:-http://z2kwarp:z2kW4rpR3g2026@213.176.74.63:8119}"
+	case "$transport" in wg|h2) procd_append_param env Z2K_WARP_TRANSPORT="$transport" ;; esac
+	procd_set_param respawn 3600 5 0
+	procd_close_instance
+}

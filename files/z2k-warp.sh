@@ -1179,6 +1179,9 @@ warp_migrate_usque() {
 }
 
 # Sourced by tests to exercise the functions with stubs — skip the dispatch.
+# OPENWRT: платформенный слой z2k-openwrt (nft-сеты и правила, fw4, модуль warp). На Keenetic файла нет.
+[ -r "$ZAPRET2_DIR/openwrt/lib/warp-openwrt.sh" ] && . "$ZAPRET2_DIR/openwrt/lib/warp-openwrt.sh"
+
 [ -n "$Z2K_WARP_SOURCE_ONLY" ] && return 0
 
 case "$1" in

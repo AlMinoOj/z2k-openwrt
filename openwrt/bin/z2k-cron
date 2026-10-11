@@ -50,6 +50,7 @@ block() {
 	echo "0 4 * * * $ZD/openwrt/bin/z2k-cron lists"
 	echo "*/5 * * * * $ZD/openwrt/bin/z2k-cron watchdog"
 	echo "* * * * * $ZD/openwrt/bin/z2k-cron tg"
+	echo "* * * * * $ZD/openwrt/bin/z2k-cron warp"
 	echo "$END"
 }
 
@@ -123,6 +124,14 @@ cmd_tg() {
 	sh "$ZD/tg-tunnel-watchdog.sh" >/dev/null 2>&1
 }
 
+# Самовосстановление WARP апстрима (в планировщике z2k — раз в 25 с, здесь
+# раз в минуту): демон жив, правила и маршрут на месте, иначе fail-open.
+cmd_warp() {
+	[ -x /opt/sbin/z2k-warpd ] && [ -f "$ZD/z2k-warp.sh" ] || return 0
+	grep -q '^GAME_WARP_ENABLED=1' "$CONF" 2>/dev/null || return 0
+	sh "$ZD/z2k-warp.sh" selfheal >/dev/null 2>&1
+}
+
 cmd_tcp16() {
 	[ -x /opt/sbin/z2k-detect ] || [ -x "$ZD/z2k-detect" ] || return 0   # модуль детектора не установлен
 	[ -f "$ZD/z2k-tcp16-probe.sh" ] && sh "$ZD/z2k-tcp16-probe.sh"
@@ -135,6 +144,7 @@ case "${1:-}" in
 	lists)       cmd_lists ;;
 	tcp16)       cmd_tcp16 ;;
 	tg)          cmd_tg ;;
+	warp)        cmd_warp ;;
 	watchdog)    cmd_watchdog ;;
 	block)       block ;;
 	*) sed -n '2,15p' "$0"; exit 2 ;;

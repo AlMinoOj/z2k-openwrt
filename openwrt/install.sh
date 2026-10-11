@@ -91,6 +91,9 @@ done
 
 mkdir -p /opt/etc/zapret2
 echo "$Z2K_OW_CHANNEL" > "$ZD/.z2k-branch"
+
+# Include fw4 (форвард LAN -> туннель WARP) подхватывается только перезагрузкой fw4.
+ls /usr/share/nftables.d/chain-pre/forward/30-z2k-*.nft >/dev/null 2>&1 && fw4 -q reload
 ow_postinstall "$ZD"
 
 # Что установлено. Из релиза (get.sh передаёт проверенный манифест) — версия
@@ -149,7 +152,7 @@ MODS="${Z2K_OW_MODULES:-}"
 MVER=""; [ -n "${Z2K_OW_MANIFEST:-}" ] && MVER=$(ow_mf_get "$Z2K_OW_MANIFEST" version)
 : > "$ZD/.z2k-modules"
 for m in $MODS; do
-	if ow_module_install "$m" "$ROOT" "${Z2K_OW_MANIFEST:-}" "$MVER"; then
+	if ow_module_pkgs_install "$m" && ow_module_install "$m" "$ROOT" "${Z2K_OW_MANIFEST:-}" "$MVER"; then
 		ow_module_set "$m" 1; say "модуль $m установлен"
 	else
 		warn "модуль $m не установлен (позже: z2k-module enable $m)"

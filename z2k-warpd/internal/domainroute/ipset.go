@@ -75,6 +75,10 @@ func (s PairSet) removeMark(client netip.Addr, name string) {
 	}
 }
 func (s PairSet) Apply(changes []Change, now time.Time) error {
+	// OPENWRT: на nftables — элементы сета inet z2k_warp pairs (pairs_nft.go).
+	if s.useNFT() {
+		return s.applyNFT(changes, now)
+	}
 	for _, ch := range changes {
 		name, err := clientSet(ch.Client)
 		if err != nil || !EligibleDestination(ch.Dest) {
@@ -112,6 +116,10 @@ func (s PairSet) Apply(changes []Change, now time.Time) error {
 	return nil
 }
 func (s PairSet) ReplaceAll(changes []Change, now time.Time) error {
+	// OPENWRT: на nftables — очистить сет и залить заново.
+	if s.useNFT() {
+		return s.replaceAllNFT(changes, now)
+	}
 	output, err := s.ipset("list", "-n")
 	if err != nil {
 		return fmt.Errorf("list WARP DNS sets: %w: %s", err, output)

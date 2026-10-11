@@ -74,6 +74,22 @@ ow_mf_file_applies() {
 	[ "$want" = "$1" ]
 }
 
+# Пакеты OpenWrt, нужные модулю: WARP — TUN-интерфейс и копия DNS-ответов
+# демону (nft log group -> nfnetlink_log).
+ow_module_pkgs() {
+	case "$1" in
+		warp) echo "kmod-tun kmod-nfnetlink-log" ;;
+	esac
+}
+ow_module_pkgs_install() {
+	local p missing=""
+	for p in $(ow_module_pkgs "$1"); do ow_pkg_installed "$p" || missing="$missing $p"; done
+	[ -n "$missing" ] || return 0
+	ow_pkg_update >/dev/null 2>&1
+	# shellcheck disable=SC2086
+	ow_pkg_install $missing >/dev/null 2>&1
+}
+
 # Свободное место на разделе с /opt (КБ).
 ow_free_kb() { df -k "${1:-/overlay}" 2>/dev/null | awk 'NR == 2 { print $4 }'; }
 

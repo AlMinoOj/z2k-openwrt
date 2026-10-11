@@ -174,6 +174,7 @@ run_steps() {
 				if service_enabled; then "$INIT" restart >/dev/null 2>&1 || rc=1
 				else log "обход выключен в конфиге — не перезапускаю"; fi ;;
 			cron) sh "$ZD/openwrt/bin/z2k-cron" install >/dev/null 2>&1 || rc=1 ;;
+			fw4)  fw4 -q reload >/dev/null 2>&1 || rc=1 ;;
 			restart-tg|restart-rtproxy|restart-warp)
 				# Модуль выключен — его службу не трогаем.
 				local svc; svc=$(ow_module_field "${s#restart-}" 4)

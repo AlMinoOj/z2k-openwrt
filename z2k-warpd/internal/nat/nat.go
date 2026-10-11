@@ -61,6 +61,10 @@ func insertArgs(r []string) []string {
 
 // Ensure ставит недостающие правила (-C || -A).
 func Ensure(run Runner, iface string, mss int) error {
+	// OPENWRT: на nftables — таблица inet z2k_warpd (nft.go).
+	if nftAvailable() {
+		return ensureNFT(run, iface, mss)
+	}
 	for _, r := range Rules(iface, mss) {
 		if _, err := run("iptables", args("-C", r)...); err == nil {
 			continue
@@ -78,6 +82,10 @@ func Ensure(run Runner, iface string, mss int) error {
 
 // Remove удаляет правила, пока -C их находит (дубликаты от старых запусков).
 func Remove(run Runner, iface string, mss int) error {
+	// OPENWRT: на nftables — таблица целиком.
+	if nftAvailable() {
+		return removeNFT(run)
+	}
 	for _, r := range Rules(iface, mss) {
 		for i := 0; i < 16; i++ {
 			if _, err := run("iptables", args("-C", r)...); err != nil {

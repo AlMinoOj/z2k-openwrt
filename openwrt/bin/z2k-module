@@ -25,6 +25,7 @@ case "${1:-}" in
 		ver=$(awk '$1 == "version" { print $2 }' $ZD/.z2k-installed 2>/dev/null)
 		[ -f $ZD/.z2k-manifest ] && [ -n "$ver" ] && [ "$ver" != dev ] ||
 			{ echo "нет манифеста установленного релиза — сначала z2k-update apply" >&2; exit 1; }
+		ow_module_pkgs_install "$m" || { echo "не установились пакеты: $(ow_module_pkgs "$m")" >&2; exit 1; }
 		ow_module_install "$m" "" $ZD/.z2k-manifest "$ver" || exit 1
 		ow_module_set "$m" 1
 		ow_module_service_start "$m"

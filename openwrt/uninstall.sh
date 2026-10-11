@@ -23,6 +23,13 @@ done
 for t in z2k_tg z2k_rtproxy z2k_warp; do nft delete table inet $t 2>/dev/null; done
 rm -f /opt/sbin/tg-mtproxy-client /opt/sbin/z2k-rt-proxy /opt/sbin/z2k-detect /opt/sbin/z2k-warpd
 rmdir /opt/sbin 2>/dev/null
+nft delete table inet z2k_warpd 2>/dev/null; nft delete table inet z2k_detect 2>/dev/null
+for r in $(ip rule show | sed -n 's/^\([0-9]*\):.*fwmark 0x989.*/\1/p'); do ip rule del pref "$r"; done
+ip route flush table 989 2>/dev/null
+if [ -f /usr/share/nftables.d/chain-pre/forward/30-z2k-warp.nft ]; then
+	rm -f /usr/share/nftables.d/chain-pre/forward/30-z2k-warp.nft
+	fw4 -q reload
+fi
 
 rm -f /etc/init.d/z2k /etc/hotplug.d/iface/90-z2k
 for l in S99zapret2 S98tg-tunnel S96z2k-rt-proxy S51z2k-warp; do [ -L /opt/etc/init.d/$l ] && rm -f /opt/etc/init.d/$l; done

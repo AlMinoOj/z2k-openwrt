@@ -68,7 +68,7 @@ files/init.d/S99z2k-scheduler	replaced	cron вместо планировщик�
 files/init.d/S98tg-tunnel	replaced	procd: openwrt/init.d/z2k-tg (симлинк /opt/etc/init.d/S98tg-tunnel)
 files/init.d/S97z2k-http-tunnel	replaced	устаревший у апстрима (порт 1444 обслуживает S98tg-tunnel) — у нас z2k-tg
 files/init.d/S96z2k-rt-proxy	replaced	procd: openwrt/init.d/z2k-rtproxy (DNS через UCI dnsmasq, nft redirect; симлинк S96z2k-rt-proxy)
-files/init.d/S51z2k-warp	replaced	procd: openwrt/init.d/z2k-warp (фаза 5)
+files/init.d/S51z2k-warp	replaced	procd: openwrt/init.d/z2k-warp (+ переходник openwrt/bin/z2k-warp-init)
 files/z2k-update-lists.sh	portable	ndmc закрыт проверкой наличия, перезапуск через /opt/etc/init.d/S99zapret2 (симлинк), канал — Z2K_GITHUB_RAW из конфига
 files/z2k-geosite.sh	portable	загрузка geosite
 files/z2k-config-validator.sh	patched	TODO фаза 2: проверки ipset и /opt/etc/init.d
@@ -80,7 +80,7 @@ files/z2k-insta-ip-refresh.sh	patched	TODO фаза 5: ndmc ip host -> dnsmasq
 files/z2k-tg-redirect.sh	replaced	nft-версия с теми же функциями: openwrt/lib/tg-redirect.sh
 files/z2k-tg-watchdog.sh	portable	работает через z2k-tg-redirect.sh (nft) и симлинк S98tg-tunnel; запуск — z2k-cron tg
 files/z2k-fix-tg-watchdog.sh	keenetic	исторический no-op
-files/z2k-warp.sh	patched	TODO фаза 5: iptables/ipset/ndmc/NFLOG -> nft/dnsmasq/ubus
+files/z2k-warp.sh	patched	1 строка-хук `# OPENWRT:` -> openwrt/lib/warp-openwrt.sh (ipset->nft-сеты, перевод правил, log group, fw4)
 files/z2k-warp-list-filter.awk	portable	фильтр списков WARP
 
 # --- Go: собранные бинарники и исходники ------------------------------------
@@ -90,9 +90,14 @@ z2k-detect/builds/*	dev	сборки апстрима (iptables) не едут: 
 z2k-detect/internal/nftfw/*	openwrt	правила детектора на nftables (наш пакет)
 z2k-detect/internal/classify/raw_linux.go	patched	// OPENWRT: подавление RST ядра через nftfw (iptables — если nft нет)
 z2k-detect/internal/prober/raw_linux.go	patched	// OPENWRT: метка обхода для зондов через nftfw
-z2k-warpd/builds/*	patched	TODO фаза 5: warpd вставляет iptables-правила — пересборка из патченных исходников
+z2k-warpd/builds/*	dev	сборки апстрима (iptables) не едут: наши — openwrt/builds (openwrt/maint/build-go.sh)
+z2k-warpd/internal/nat/nft.go	openwrt	маскарадинг/MSS туннеля на nftables (наш файл)
+z2k-warpd/internal/nat/nft_test.go	openwrt	тест
+z2k-warpd/internal/domainroute/pairs_nft.go	openwrt	пары клиент->адрес на nft-сете (наш файл)
+z2k-warpd/internal/nat/nat.go	patched	// OPENWRT: Ensure/Remove -> nft.go при наличии nft
+z2k-warpd/internal/domainroute/ipset.go	patched	// OPENWRT: Apply/ReplaceAll -> pairs_nft.go при наличии nft
 z2k-detect/*	dev	исходники детектора: правка -> openwrt/maint/build-go.sh z2k-detect
-z2k-warpd/*	dev	исходники WARP (правки -> пересборка builds/)
+z2k-warpd/*	dev	исходники WARP: правка -> openwrt/maint/build-go.sh z2k-warpd
 z2k-verify/*	dev	исходники проверяльщика подписи
 mtproxy-client/S97tg-mtproxy	keenetic	устаревший init-скрипт клиента
 mtproxy-client/*	dev	исходники клиента туннеля

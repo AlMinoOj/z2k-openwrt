@@ -53,6 +53,10 @@ ow_layout_targets()
 		# --- модуль tg ---
 		files/z2k-tg-watchdog.sh)    echo "$zd/tg-tunnel-watchdog.sh" ;;
 
+		# --- модуль warp ---
+		files/z2k-warp.sh)           echo "$zd/z2k-warp.sh" ;;
+		openwrt/fw4/*.nft)           echo "/usr/share/nftables.d/chain-pre/forward/${p#openwrt/fw4/}" ;;
+
 		# --- библиотеки z2k (генераторы, утилиты) ---
 		lib/install.sh|lib/release_map.sh|lib/auto_update.sh) ;;
 		lib/*.sh)                    echo "$zd/$p" ;;

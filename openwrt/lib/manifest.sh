@@ -67,6 +67,8 @@ ow_steps_for()
 			echo restart-rtproxy ;;
 		openwrt/builds/z2k-warpd-linux-*|openwrt/init.d/z2k-warp)
 			echo restart-warp ;;
+		openwrt/fw4/*)
+			echo fw4 ;;
 		files/lua/*|files/fake/*|files/S99zapret2.new|files/lists/*|files/etc/*|extras/*|\
 		openwrt/lib/s99-openwrt.sh|openwrt/init.d/z2k)
 			echo restart-service ;;
@@ -86,6 +88,7 @@ ow_step_order()
 	echo restart-tg
 	echo restart-rtproxy
 	echo restart-warp
+	echo fw4
 	echo cron
 }
 
