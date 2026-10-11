@@ -86,7 +86,7 @@
   `replaced` / `keenetic` / `dev` / `openwrt`), первое совпадение побеждает.
   На 2026-10-11: dev 698, portable 118, patched 35 (все пока TODO), replaced 21,
   keenetic 10.
-- [x] `openwrt/tools/compat-check.sh`: сводка, `--list`, `--stdin`, `--class`;
+- [x] `openwrt/maint/compat-check.sh`: сводка, `--list`, `--stdin`, `--class`;
   exit 1 при неклассифицированных файлах.
 - [x] `openwrt/lib/platform.sh`: серия OpenWrt и поддержка (23.05+), opkg/apk,
   пакетная арка → GOARCH / уровень ARM / каталог движка / имя Go-сборки
@@ -116,10 +116,10 @@
   `kmod-nf-conntrack`.
 
 ### Фаза 3. Обновления
-- Мейнтейнер: `openwrt/tools/upstream-sync.sh` — проверка подписи апстрима,
+- Мейнтейнер: `openwrt/maint/upstream-sync.sh` — проверка подписи апстрима,
   отчёт по окну `upstream_base..тег` (описания релизов, файлы с классами из
   `compat-map.tsv`, бамп пина движка), `git merge`, тесты.
-- Мейнтейнер: `openwrt/tools/release.sh` — версия, `UPDATES.json` (карта путей
+- Мейнтейнер: `openwrt/maint/release.sh` — версия, `UPDATES.json` (карта путей
   OpenWrt, `files_sha256`, `history[]` со `steps`, `upstream_base`), подпись
   своим ключом, тег `vX.Y.Z`, push.
 - Роутер: обновлятор на базе converge-логики `lib/auto_update.sh` (план по
@@ -164,10 +164,10 @@
 
 ## Еженедельный цикл мейнтейнера
 
-1. `openwrt/tools/upstream-sync.sh <тег апстрима>` → отчёт.
+1. `openwrt/maint/upstream-sync.sh <тег апстрима>` → отчёт.
 2. Разбор `patched` / `replaced` / `unknown`, merge, правки.
 3. Тесты + QEMU-смоук.
-4. `openwrt/tools/release.sh minor` → подписанный релиз.
+4. `openwrt/maint/release.sh minor` → подписанный релиз.
 
 ## Риски
 

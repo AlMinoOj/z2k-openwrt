@@ -2,12 +2,12 @@
 #
 # Источник правды для двух вещей:
 #   1) что едет на роутер (поставка/манифест форка) — классы portable и patched;
-#   2) отчёт еженедельной синхронизации с апстримом (openwrt/tools/upstream-sync.sh):
+#   2) отчёт еженедельной синхронизации с апстримом (openwrt/maint/upstream-sync.sh):
 #      по классу изменённого файла видно, требует ли он внимания.
 #
 # Формат: шаблон<TAB>класс<TAB>примечание. Шаблон — glob в стиле shell `case`
 # (`*` совпадает и со `/`). Побеждает ПЕРВОЕ совпадение — частные правила выше общих.
-# Файл без совпадения = `unknown`: openwrt/tools/compat-check.sh падает,
+# Файл без совпадения = `unknown`: openwrt/maint/compat-check.sh падает,
 # пока ему не назначат класс.
 #
 # Классы:
@@ -29,7 +29,7 @@ CLAUDE.md	openwrt	правила проекта
 .github/README.md	openwrt	README форка
 
 # --- манифест и подпись (свои у форка) --------------------------------------
-UPDATES.json	replaced	манифест форка собирает openwrt/tools/release.sh
+UPDATES.json	replaced	манифест форка собирает openwrt/maint/release.sh
 UPDATES.json.sig	replaced	подпись ключом форка
 files/etc/z2k-update-pub.pem	replaced	публичный ключ форка: openwrt/etc/z2k-update-pub.pem
 
@@ -51,7 +51,7 @@ lib/utils.sh	patched	TODO фаза 1-3: z2k_opkg/wget-шим и прокси с 
 lib/webpanel.sh	patched	TODO фаза 6: управление панелью через /opt/etc/init.d
 lib/menu.sh	patched	TODO фаза 3-6: интерактивное меню; ndmc, /opt/etc/init.d, iptables
 lib/auto_update.sh	replaced	обновлятор форка: openwrt/lib/update.sh (converge-логика взята отсюда)
-lib/release_map.sh	replaced	карта путей форка: openwrt/tools/release.sh
+lib/release_map.sh	replaced	карта путей форка: openwrt/maint/release.sh
 lib/install.sh	replaced	установщик форка: openwrt/install.sh
 z2k.sh	replaced	точка входа форка: openwrt/install.sh и /usr/bin/z2k
 z2k_cleanup.sh	replaced	деинсталлятор форка: openwrt/uninstall.sh
