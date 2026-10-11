@@ -11,6 +11,9 @@ Z2K=/etc/init.d/z2k
 
 # Обход выключен в конфиге — правил нет, обновлять нечего.
 grep -q '^ENABLED=1' /opt/zapret2/config 2>/dev/null || exit 0
+# Служба ещё не поднялась (ifup lan/loopback при загрузке идут раньше S99z2k):
+# таблицы нет — наборы заполнит сам start.
+nft list table inet zapret2 >/dev/null 2>&1 || exit 0
 
 logger -t z2k "reload ifsets: $ACTION $INTERFACE"
 "$Z2K" reload_ifsets >/dev/null 2>&1

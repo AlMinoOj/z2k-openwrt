@@ -137,9 +137,17 @@
 - [x] flow offload fw4 → `FLOWOFFLOAD` движка (своя flowtable с исключениями).
 - [x] Тесты: `test_engine` (реальный архив), `test_generate` (генератор в
   песочнице), `test_layout` (раскладка ↔ compat-map, хук S99).
-- [ ] **Проверка на живом OpenWrt** (QEMU x86_64 или роутер): старт,
-  `nft list table inet zapret2`, nfqws2 на очереди 200, обход реально работает,
-  reload fw4, ifup/ifdown, перезагрузка.
+- [x] **QEMU x86_64, OpenWrt 24.10.8 (opkg) и 25.12.5 (apk)** — 2026-10-11:
+  установка с нуля, пакеты, движок, генерация, старт; nfqws2 от nobody на
+  очереди 200; правила на @wanif, nozapret засеян; трафик идёт через демон
+  (31 пакет на запрос); `fw4 reload` таблицу не трогает; ifup/ifdown →
+  reload_ifsets; перезагрузка → автозапуск; ENABLED=0 → не стартует; stop
+  снимает все правила очереди; uninstall чистый; переустановка. Флеш 7 МБ,
+  RSS nfqws2 ~17 МБ. Стенд: `scratchpad/vm/run24.sh|run25.sh` (TCG, без WHPX).
+- [ ] **Обход на настоящем роутере.** Сеть QEMU (slirp) сама завершает TCP и
+  отправляет фейки nfqws2 как настоящие данные — часть стратегий на стенде
+  ломает соединение (rutracker), это ограничение стенда, а не порта.
+- [ ] OpenWrt 23.05 в QEMU.
 - [ ] Наблюдать: нужен ли на nft аналог z2k UDP masquerade fix (на iptables
   чинил NAT сгенерированных UDP-пакетов); у апстрима на nft — notrack/postnat.
 
