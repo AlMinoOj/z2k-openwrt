@@ -1,0 +1,131 @@
+# compat-map.tsv — классификация КАЖДОГО файла репозитория для порта OpenWrt.
+#
+# Источник правды для двух вещей:
+#   1) что едет на роутер (поставка/манифест форка) — классы portable и patched;
+#   2) отчёт еженедельной синхронизации с апстримом (openwrt/tools/upstream-sync.sh):
+#      по классу изменённого файла видно, требует ли он внимания.
+#
+# Формат: шаблон<TAB>класс<TAB>примечание. Шаблон — glob в стиле shell `case`
+# (`*` совпадает и со `/`). Побеждает ПЕРВОЕ совпадение — частные правила выше общих.
+# Файл без совпадения = `unknown`: openwrt/tools/compat-check.sh падает,
+# пока ему не назначат класс.
+#
+# Классы:
+#   portable  едет на роутер как есть (путь назначения — из карты форка).
+#             Изменение в апстриме: забираем без разбора.
+#   patched   едет на роутер, содержит правки `# OPENWRT:` или ждёт их (TODO).
+#             Изменение в апстриме: merge + проверка наших правок.
+#   replaced  НЕ едет; его роль выполняет наш файл (см. примечание).
+#             Изменение в апстриме: смотреть глазами и переносить смысл в замену.
+#   keenetic  НЕ едет; функция специфична для Keenetic/Entware и на OpenWrt не нужна.
+#             Изменение в апстриме: игнорировать (бегло глянуть описание релиза).
+#   dev       НЕ едет; тесты, CI, документация, исходники, серверная часть.
+#             Изменение в апстриме: merge, на роутер не влияет.
+#   openwrt   наш собственный код порта.
+
+# --- наш порт ------------------------------------------------------------
+openwrt/*	openwrt	код и документация порта
+CLAUDE.md	openwrt	правила проекта
+.github/README.md	openwrt	README форка
+
+# --- манифест и подпись (свои у форка) --------------------------------------
+UPDATES.json	replaced	манифест форка собирает openwrt/tools/release.sh
+UPDATES.json.sig	replaced	подпись ключом форка
+files/etc/z2k-update-pub.pem	replaced	публичный ключ форка: openwrt/etc/z2k-update-pub.pem
+
+# --- движок: данные nfqws2 (без платформы) ----------------------------------
+files/lua/*	portable	Lua внутри nfqws2; пути переопределяются env
+files/fake/*	portable	fake-блобы
+files/lists/*	portable	поставляемые списки
+files/etc/z2k-roots.pem	portable	якоря TLS для relay Telegram
+strats_new2.txt	portable	каталог стратегий
+quic_strats.ini	portable	стратегии QUIC
+extras/*	portable	доп. списки хостов
+
+# --- генераторы конфига и стратегий ------------------------------------------
+lib/strategies.sh	portable	генератор Strategy.txt; пути через ${ZAPRET2_DIR}
+lib/config_official.sh	patched	TODO фаза 2: CUSTOM_DIR=/opt/zapret2/init.d/keenetic, FWTYPE/iptables-ветки
+lib/config.sh	portable	категории и whitelist
+lib/wan.sh	portable	WAN по default route
+lib/utils.sh	patched	TODO фаза 1-3: z2k_opkg/wget-шим и прокси с учёткой, ndmc-очистка, get_entware_arch
+lib/webpanel.sh	patched	TODO фаза 6: управление панелью через /opt/etc/init.d
+lib/menu.sh	patched	TODO фаза 3-6: интерактивное меню; ndmc, /opt/etc/init.d, iptables
+lib/auto_update.sh	replaced	обновлятор форка: openwrt/lib/update.sh (converge-логика взята отсюда)
+lib/release_map.sh	replaced	карта путей форка: openwrt/tools/release.sh
+lib/install.sh	replaced	установщик форка: openwrt/install.sh
+z2k.sh	replaced	точка входа форка: openwrt/install.sh и /usr/bin/z2k
+z2k_cleanup.sh	replaced	деинсталлятор форка: openwrt/uninstall.sh
+
+# --- init и рантайм ----------------------------------------------------------
+files/S99zapret2.new	replaced	procd-init: openwrt/init.d/z2k + openwrt/nft/*
+files/000-zapret2.sh	keenetic	NDM netfilter-хук; на OpenWrt правила держит fw4
+files/ndm/*	keenetic	NDM netfilter-хуки; аналоги — fw4 include (openwrt/nft/*)
+files/z2k-ppe-deoffload.sh	keenetic	PPE/connskip Keenetic; на OpenWrt — исключение из flow offload
+files/z2k-nfqueue-selfheal.sh	replaced	страховка от вайпа NDM; на OpenWrt — проверка в openwrt/init.d/z2k
+files/z2k-scheduler.sh	replaced	резидентный планировщик; на OpenWrt — cron (openwrt/cron/z2k)
+files/z2k-auto-update.sh	replaced	ночной запуск обновления: openwrt/lib/update.sh
+files/init.d/S99z2k-scheduler	replaced	cron вместо планировщика
+files/init.d/S98tg-tunnel	replaced	procd: openwrt/init.d/z2k-tg-tunnel (фаза 5)
+files/init.d/S97z2k-http-tunnel	replaced	procd: openwrt/init.d/z2k-http-tunnel (фаза 5)
+files/init.d/S96z2k-rt-proxy	replaced	procd: openwrt/init.d/z2k-rt-proxy (фаза 5)
+files/init.d/S51z2k-warp	replaced	procd: openwrt/init.d/z2k-warp (фаза 5)
+files/z2k-update-lists.sh	patched	TODO фаза 4: ndmc-очистка ip host, ipset
+files/z2k-geosite.sh	portable	загрузка geosite
+files/z2k-config-validator.sh	patched	TODO фаза 2: проверки ipset и /opt/etc/init.d
+files/z2k-blocked-monitor.sh	portable	монитор блокировок (только пути /opt/zapret2)
+files/z2k-dns-check.sh	portable	проверка DNS
+files/z2k-tcp16-probe.sh	patched	TODO фаза 4: перезапуск через /opt/etc/init.d
+files/z2k-diag.sh	patched	TODO фаза 7: ndmc, iptables/ipset, opkg в диагностике
+files/z2k-insta-ip-refresh.sh	patched	TODO фаза 5: ndmc ip host -> dnsmasq
+files/z2k-tg-redirect.sh	patched	TODO фаза 5: iptables REDIRECT/ipset -> nft
+files/z2k-tg-watchdog.sh	patched	TODO фаза 5: перезапуск и проверки правил
+files/z2k-fix-tg-watchdog.sh	patched	TODO фаза 5: проверка правил
+files/z2k-warp.sh	patched	TODO фаза 5: iptables/ipset/ndmc/NFLOG -> nft/dnsmasq/ubus
+files/z2k-warp-list-filter.awk	portable	фильтр списков WARP
+
+# --- Go: собранные бинарники и исходники ------------------------------------
+mtproxy-client/builds/*	portable	статичные ELF; секрет туннеля вшит апстримом — пересобирать нельзя
+z2k-verify/builds/*	portable	проверка подписи манифеста (апстрим на роутер не ставит, форк ставит)
+z2k-detect/builds/*	patched	TODO фаза 5: детектор вызывает iptables — пересборка из патченных исходников
+z2k-warpd/builds/*	patched	TODO фаза 5: warpd вставляет iptables-правила — пересборка из патченных исходников
+z2k-detect/*	dev	исходники детектора (правки -> пересборка builds/)
+z2k-warpd/*	dev	исходники WARP (правки -> пересборка builds/)
+z2k-verify/*	dev	исходники проверяльщика подписи
+mtproxy-client/S97tg-mtproxy	keenetic	устаревший init-скрипт клиента
+mtproxy-client/*	dev	исходники клиента туннеля
+rt-proxy/*	dev	исходники моста RuTracker (сборки лежат в mtproxy-client/builds)
+build-matrix.tsv	dev	матрица сборки Go
+
+# --- вебпанель ---------------------------------------------------------------
+webpanel/www/*	portable	SPA (статичные файлы)
+webpanel/cgi/api.sh	patched	TODO фаза 6: PATH /opt, маршруты PPE/fastroute
+webpanel/cgi/auth.sh	patched	TODO фаза 6: вход через NDM /auth -> rpcd/ubus session
+webpanel/cgi/actions.sh	patched	TODO фаза 6: ndmc, /opt/etc/init.d, ipset
+webpanel/init.d/*	replaced	procd: openwrt/init.d/z2k-panel (uhttpd)
+webpanel/lighttpd.conf	replaced	uhttpd-инстанс: openwrt/uci/z2k-panel
+webpanel/install.sh	replaced	установка панели — часть openwrt/install.sh
+webpanel/uninstall.sh	replaced	удаление панели — часть openwrt/uninstall.sh
+
+# --- серверная часть, CI, тесты, документация -------------------------------
+vps/*	dev	конфиги VPS автора
+vps-relay/*	dev	серверный relay (amd64, не для роутера)
+archive/*	dev	архив
+tests/*	dev	тесты апстрима
+scripts/*	dev	релизные и CI-скрипты апстрима
+release.sh	dev	релизный скрипт апстрима
+.github/*	dev	workflows апстрима (в форке выключены)
+docs/*	dev	документация апстрима
+README.md	dev	README апстрима (README форка — .github/README.md)
+ARCHITECTURE.md	dev	документация апстрима
+RELEASING.md	dev	документация апстрима
+CONTRIBUTING.md	dev	документация апстрима
+SECURITY.md	dev	документация апстрима
+LICENSE	dev	MIT
+package.json	dev	eslint
+package-lock.json	dev	eslint
+eslint.config.mjs	dev	eslint
+.luacheckrc	dev	luacheck
+.gitattributes	dev	git
+.gitignore	dev	git
+.gitleaks.toml	dev	gitleaks
+.gitleaksignore	dev	gitleaks

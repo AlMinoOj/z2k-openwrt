@@ -69,25 +69,35 @@
 
 ## Фазы
 
-### Фаза 0. Подготовка (в работе)
+### Фаза 0. Подготовка (готово, кроме ключа)
 - [x] Полный клон, remote `upstream`, ветка `main` от `p-86.19`.
 - [x] План, правила проекта (`CLAUDE.md`).
-- [ ] Репозиторий на GitHub мейнтейнера, первый push (без тегов апстрима).
-- [ ] Отключить/заменить workflows апстрима (`publish.yml`, `jsdelivr-purge.yml`,
-      `entware-offline.yml`, `security.yml` завязаны на `necronicle/*`).
+- [x] Репозиторий `AlMinoOj/z2k-openwrt` (private), push `main` без тегов
+      апстрима (2026-10-11).
+- [x] Actions в репозитории выключены (workflows апстрима завязаны на
+      `necronicle/*`); свой CI — фаза 7.
 - [ ] Ключ подписи Ed25519 — генерирует мейнтейнер локально, в репозиторий
-      кладётся только публичный.
+      кладётся только публичный (к фазе 3).
+- [ ] Перед релизом 1.0 сделать репозиторий публичным (роутеры качают raw
+      без токена; jsdelivr работает только с публичными).
 
-### Фаза 1. Каркас
-- `openwrt/compat-map.tsv`: путь → класс (`portable` / `patched` /
-  `replaced` / `ignored`) — источник правды и для поставки, и для отчёта
-  синхронизации.
-- `openwrt/lib/platform.sh`: определение версии OpenWrt, пакетного менеджера
-  (opkg/apk), архитектуры (`/etc/openwrt_release` `DISTRIB_ARCH`) → маппинг на
-  имена сборок (`linux-arm64`, `linux-mipsel`, …).
-- `openwrt/lib/channel.sh`: URL репозитория, ветка, метка канала.
-- Установщик `openwrt/install.sh` (однострочник для пользователя),
-  деинсталлятор.
+### Фаза 1. Каркас (в работе)
+- [x] `openwrt/compat-map.tsv`: путь → класс (`portable` / `patched` /
+  `replaced` / `keenetic` / `dev` / `openwrt`), первое совпадение побеждает.
+  На 2026-10-11: dev 698, portable 118, patched 35 (все пока TODO), replaced 21,
+  keenetic 10.
+- [x] `openwrt/tools/compat-check.sh`: сводка, `--list`, `--stdin`, `--class`;
+  exit 1 при неклассифицированных файлах.
+- [x] `openwrt/lib/platform.sh`: серия OpenWrt и поддержка (23.05+), opkg/apk,
+  пакетная арка → GOARCH / уровень ARM / каталог движка / имя Go-сборки
+  (суффиксы mipsel|mipsle, x86|386, mips64el|mips64le; GOARM=7-сборки не
+  ставятся на ARMv5/v6).
+- [x] `openwrt/lib/channel.sh`: репозиторий, ветка, метка канала
+  `openwrt-main`, URL манифеста и файлов.
+- [x] Тесты: `openwrt/tests/run.sh` (dash), `test_platform.sh` — 72 проверки.
+- [x] README форка: `.github/README.md`.
+- [ ] Установщик `openwrt/install.sh` (однострочник для пользователя),
+  деинсталлятор — после фазы 2 (нужно, что ставить).
 - Позже: OpenWrt-feed с пакетами `z2k` (noarch) и `z2k-bin-<arch>`.
 
 ### Фаза 2. Ядро обхода
