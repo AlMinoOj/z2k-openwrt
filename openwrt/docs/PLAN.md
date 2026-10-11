@@ -151,19 +151,46 @@
 - [ ] Наблюдать: нужен ли на nft аналог z2k UDP masquerade fix (на iptables
   чинил NAT сгенерированных UDP-пакетов); у апстрима на nft — notrack/postnat.
 
-### Фаза 3. Обновления
-- Мейнтейнер: `openwrt/maint/upstream-sync.sh` — проверка подписи апстрима,
-  отчёт по окну `upstream_base..тег` (описания релизов, файлы с классами из
-  `compat-map.tsv`, бамп пина движка), `git merge`, тесты.
-- Мейнтейнер: `openwrt/maint/release.sh` — версия, `UPDATES.json` (карта путей
-  OpenWrt, `files_sha256`, `history[]` со `steps`, `upstream_base`), подпись
-  своим ключом, тег `vX.Y.Z`, push.
-- Роутер: обновлятор на базе converge-логики `lib/auto_update.sh` (план по
-  расхождению sha, скачивание заранее, атомарный `mv`, снимок, откат,
-  health-check, тег пишется последним) в своём файле `openwrt/lib/update.sh`;
-  шаги транслированы под procd; проверка подписи `z2k-verify` (ставим его,
-  апстрим не ставит) или `openssl` 3.x; защита от даунгрейда по `seq`.
-- Режимы: автоприменение (раз в сутки по cron с джиттером) / только вручную.
+### Фаза 3. Обновления (готово, кроме ключа мейнтейнера и первого релиза)
+Решения (2026-10-11):
+- **Подпись — формат usign** (Ed25519). Роутер проверяет встроенным `usign`
+  (есть в 23.05/24.10/25.12, им подписаны фиды OpenWrt) — openssl и Go-бинарник
+  на роутере не нужны. Мейнтейнер подписывает обычным openssl 3.x
+  (`openwrt/maint/sign.sh`): тот же Ed25519, другая упаковка.
+- **Манифест — текст с TAB** (`openwrt/release/manifest` + `.sig`), разбор awk
+  на busybox. Поля: channel, seq, version (= git-тег), upstream_base, date,
+  reset_state, `file sha mode путь цели`, `release …` (история).
+- **Шаги выводятся на роутере из изменившихся файлов** (`ow_steps_for` в
+  `openwrt/lib/manifest.sh`, аналог `z2k_steps_for` апстрима), канонический
+  порядок: engine → regen-strategies → regen-config → validate-config →
+  reset-state → restart-service.
+
+Сделано:
+- [x] `openwrt/maint/sign.sh` (keygen/pub/sign), `usign-verify.sh` (проверка
+  формата usign через openssl — CI, тесты, release.sh).
+- [x] `openwrt/maint/build-manifest.sh`, `release.sh` (версия minor/patch/major,
+  seq+1, тесты, подпись, сверка с `openwrt/etc/z2k-update.pub`, коммит, тег,
+  push: сначала тег, потом ветка).
+- [x] `openwrt/maint/upstream-sync.sh` — отчёт (подпись апстрима, релизы в
+  окне, файлы по классам, удалённые, смена пина движка), `--merge`,
+  `--bump-engine`; база — `openwrt/UPSTREAM`.
+- [x] `openwrt/lib/update.sh` + CLI `z2k-update check|apply [--auto]|status`:
+  подпись, канал, seq (откат кэша зеркала — пропуск), план по sha, сироты,
+  скачивание до записи, снимок, атомарная замена, шаги новым кодом, проверка
+  службы, откат, отметка откатившейся версии (ночной режим её не повторяет),
+  `Z2K_AUTO_UPDATE_ENABLED=0` уважается.
+- [x] `openwrt/get.sh` — установка одной командой по подписанному манифесту.
+- [x] `openwrt/lib/postinstall.sh` — псевдонимы блобов (как lib/install.sh),
+  ссылка `/usr/bin/z2k-update`.
+- [x] Тесты: `test_update` (39 проверок: подделка, битый файл, откат, сироты,
+  seq, канал, --auto), `test_postinstall`.
+- [x] **QEMU 25.12.5, настоящий usign**: get.sh → v1.0.0; apply v1.1.0
+  (3 файла, 4 шага, 34 с под TCG); v1.2.0 со сломанным Lua → служба не
+  поднялась → откат на v1.1.0, обход работает.
+- [ ] **Ключ мейнтейнера**: `sh openwrt/maint/sign.sh keygen` у мейнтейнера,
+  `openwrt/etc/z2k-update.pub` в репозиторий.
+- [ ] Первый релиз `v1.0.0` (после фаз 4–6 или раньше — как решит мейнтейнер);
+  репозиторий публичный (raw/jsdelivr без токена).
 
 ### Фаза 4. Списки и cron
 - `files/z2k-update-lists.sh` без `ndmc`; geosite; задания cron вместо

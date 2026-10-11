@@ -29,9 +29,9 @@ CLAUDE.md	openwrt	правила проекта
 .github/README.md	openwrt	README форка
 
 # --- манифест и подпись (свои у форка) --------------------------------------
-UPDATES.json	replaced	манифест форка собирает openwrt/maint/release.sh
+UPDATES.json	replaced	манифест форка: openwrt/release/manifest (openwrt/maint/release.sh)
 UPDATES.json.sig	replaced	подпись ключом форка
-files/etc/z2k-update-pub.pem	replaced	публичный ключ форка: openwrt/etc/z2k-update-pub.pem
+files/etc/z2k-update-pub.pem	replaced	ключ апстрима; ключ канала форка — openwrt/etc/z2k-update.pub (usign)
 
 # --- движок: данные nfqws2 (без платформы) ----------------------------------
 files/lua/*	portable	Lua внутри nfqws2; пути переопределяются env
@@ -50,7 +50,7 @@ lib/wan.sh	portable	WAN по default route
 lib/utils.sh	patched	TODO фаза 1-3: z2k_opkg/wget-шим и прокси с учёткой, ndmc-очистка, get_entware_arch
 lib/webpanel.sh	patched	TODO фаза 6: управление панелью через /opt/etc/init.d
 lib/menu.sh	patched	TODO фаза 3-6: интерактивное меню; ndmc, /opt/etc/init.d, iptables
-lib/auto_update.sh	replaced	обновлятор форка: openwrt/lib/update.sh (converge-логика взята отсюда)
+lib/auto_update.sh	replaced	обновлятор форка: openwrt/lib/update.sh (схема сходимости отсюда; шаги — openwrt/lib/manifest.sh ow_steps_for)
 lib/release_map.sh	replaced	карта путей форка: openwrt/maint/release.sh
 lib/install.sh	replaced	установщик форка: openwrt/install.sh
 z2k.sh	replaced	точка входа форка: openwrt/install.sh и /usr/bin/z2k
@@ -63,7 +63,7 @@ files/ndm/*	keenetic	NDM netfilter-хуки; аналоги — fw4 include (ope
 files/z2k-ppe-deoffload.sh	keenetic	PPE/connskip Keenetic; на OpenWrt — исключение из flow offload
 files/z2k-nfqueue-selfheal.sh	replaced	страховка от вайпа NDM; на OpenWrt — проверка в openwrt/init.d/z2k
 files/z2k-scheduler.sh	replaced	резидентный планировщик; на OpenWrt — cron (openwrt/cron/z2k)
-files/z2k-auto-update.sh	replaced	ночной запуск обновления: openwrt/lib/update.sh
+files/z2k-auto-update.sh	replaced	ночной запуск: z2k-update apply --auto (cron, фаза 4)
 files/init.d/S99z2k-scheduler	replaced	cron вместо планировщика
 files/init.d/S98tg-tunnel	replaced	procd: openwrt/init.d/z2k-tg-tunnel (фаза 5)
 files/init.d/S97z2k-http-tunnel	replaced	procd: openwrt/init.d/z2k-http-tunnel (фаза 5)

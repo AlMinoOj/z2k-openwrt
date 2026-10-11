@@ -1,0 +1,6 @@
+#!/bin/sh
+# z2k-update — обновления z2k-openwrt из канала форка.
+#   z2k-update check     есть ли новая версия
+#   z2k-update apply     применить (с откатом при неудаче)
+#   z2k-update status    что установлено, история
+exec sh /opt/zapret2/openwrt/lib/update.sh "$@"

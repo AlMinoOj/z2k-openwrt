@@ -1,0 +1,3 @@
+# До какой версии z2k (necronicle/z2k, ветка z2k-enhanced) дотянут форк.
+# Обновляется openwrt/maint/upstream-sync.sh после merge; попадает в манифест.
+upstream_base=p-86.19

@@ -20,6 +20,8 @@ OW_ZD="$ZD"
 . "$ROOT/openwrt/lib/channel.sh"
 . "$ROOT/openwrt/lib/engine.sh"
 . "$ROOT/openwrt/lib/layout.sh"
+. "$ROOT/openwrt/lib/manifest.sh"
+. "$ROOT/openwrt/lib/postinstall.sh"
 
 say()  { echo "[z2k] $*"; }
 warn() { echo "[z2k] ВНИМАНИЕ: $*" >&2; }
@@ -72,7 +74,7 @@ for f in $(ow_layout_files "$ROOT"); do
 		mkdir -p "$(dirname "$t")" || die "не создаётся $(dirname "$t")"
 		cp -f "$ROOT/$f" "$t.z2k-new" && mv -f "$t.z2k-new" "$t" || die "не скопировался $f -> $t"
 		case "$t" in
-			/etc/init.d/*|/etc/hotplug.d/*|*/init.d/z2k-engine|*.sh) chmod 755 "$t" ;;
+			/etc/init.d/*|/etc/hotplug.d/*|*/init.d/z2k-engine|*/openwrt/bin/*|*.sh) chmod 755 "$t" ;;
 		esac
 		n=$((n + 1))
 	done
@@ -92,6 +94,23 @@ mkdir -p /opt/etc/init.d /opt/etc/zapret2
 ln -sf /etc/init.d/z2k /opt/etc/init.d/S99zapret2
 
 echo "$Z2K_OW_CHANNEL" > "$ZD/.z2k-branch"
+ow_postinstall "$ZD"
+
+# Что установлено. Из релиза (get.sh передаёт проверенный манифест) — версия
+# и seq релиза, обновлятор дальше сходится от них. Из локальной копии — dev,
+# seq 0: первое же z2k-update apply приведёт установку к релизу канала.
+if [ -n "${Z2K_OW_MANIFEST:-}" ] && ow_mf_valid "$Z2K_OW_MANIFEST"; then
+	cp -f "$Z2K_OW_MANIFEST" "$ZD/.z2k-manifest"
+	{ echo "version $(ow_mf_get "$Z2K_OW_MANIFEST" version)"; echo "seq $(ow_mf_get "$Z2K_OW_MANIFEST" seq)"
+	  echo "channel $Z2K_OW_CHANNEL"; echo "upstream_base $(ow_mf_get "$Z2K_OW_MANIFEST" upstream_base)"
+	  echo "updated $(date -u +%Y-%m-%dT%H:%M:%SZ)"; } > "$ZD/.z2k-installed"
+else
+	rm -f "$ZD/.z2k-manifest"
+	{ echo "version dev"; echo "seq 0"; echo "channel $Z2K_OW_CHANNEL"
+	  echo "upstream_base $(sed -n 's/^upstream_base=//p' "$ROOT/openwrt/UPSTREAM" 2>/dev/null)"
+	  echo "updated $(date -u +%Y-%m-%dT%H:%M:%SZ)"; } > "$ZD/.z2k-installed"
+fi
+[ -s "$ZD/etc/z2k-update.pub" ] || warn "нет ключа канала ($ZD/etc/z2k-update.pub) — z2k-update работать не будет"
 
 # --- 5. flow offloading -------------------------------------------------------------------
 # Потоки, ушедшие в offload fw4, мимо очереди nfqws2 — обход ломается. Как и

@@ -67,6 +67,26 @@ ow_z2k_generate()
 	create_official_config "$ZAPRET2_DIR/config" || exit 1
 )
 
+# Шаги обновления (как au_step_regen_* апстрима): живые хостлисты НЕ
+# перезаписываются снимками — их ведут geosite и пользователь.
+ow_z2k_regen_strategies()
+(
+	set +u
+	ow_z2k_env
+	ow_z2k_source_libs || exit 1
+	generate_strategies_conf "$ZAPRET2_DIR/strats_new2.txt" "$CONFIG_DIR/strategies.conf" || exit 1
+	generate_quic_strategies_conf "$ZAPRET2_DIR/quic_strats.ini" "$CONFIG_DIR/quic_strategies.conf" || exit 1
+	create_default_strategy_files
+)
+
+ow_z2k_regen_config()
+(
+	set +u
+	ow_z2k_env
+	ow_z2k_source_libs || exit 1
+	create_official_config "$ZAPRET2_DIR/config"
+)
+
 # ow_z2k_apply_strategies — финальный шаг установки z2k: пулы автоциркуляра
 # по категориям, перегенерация конфига и перезапуск службы через INIT_SCRIPT.
 ow_z2k_apply_strategies()

@@ -29,6 +29,13 @@
 - Go 1.25.13 для сборок: `~/go/bin/go1.25.13` (1.26+ ломает MIPS softfloat).
 - Под Windows tar не понимает `C:/…` — передавай POSIX-пути (`/c/…`).
 
+## Обновления (фаза 3)
+
+- Манифест `openwrt/release/manifest` (+`.sig`, usign) собирает только `openwrt/maint/release.sh`. Ключ мейнтейнера: `~/.z2k-openwrt-signing/z2k-update.key`, публичный — `openwrt/etc/z2k-update.pub`.
+- Роутер: `z2k-update` → `openwrt/lib/update.sh`; шаги по файлам — `ow_steps_for` в `openwrt/lib/manifest.sh` (новый тип файла с эффектом — сюда).
+- Синхронизация: `openwrt/maint/upstream-sync.sh [тег] [--merge] [--bump-engine]`; база — `openwrt/UPSTREAM`.
+- Стенд обновлений: локальный канал (`python -m http.server` на хосте, ВМ видит его как 10.0.2.2), переменные `Z2K_OW_RAW_BASE`/`Z2K_OW_CDN_BASE`.
+
 ## Справка по апстриму
 
 - Устройство: `ARCHITECTURE.md`, релизы: `RELEASING.md`.

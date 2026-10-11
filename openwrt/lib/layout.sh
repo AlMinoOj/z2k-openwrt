@@ -23,6 +23,7 @@ ow_layout_targets()
 		openwrt/init.d/z2k)          echo "/etc/init.d/z2k" ;;
 		openwrt/hotplug/90-z2k)      echo "/etc/hotplug.d/iface/90-z2k" ;;
 		openwrt/lib/*.sh)            echo "$zd/$p" ;;
+		openwrt/bin/*)               echo "$zd/$p" ;;
 		openwrt/engine.pin)          echo "$zd/openwrt/engine.pin" ;;
 		openwrt/install.sh|openwrt/uninstall.sh) echo "$zd/$p" ;;
 		openwrt/etc/*)               echo "$zd/etc/${p#openwrt/etc/}" ;;

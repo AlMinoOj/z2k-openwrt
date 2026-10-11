@@ -20,7 +20,7 @@ Z2K_OW_RAW_BASE="${Z2K_OW_RAW_BASE:-https://raw.githubusercontent.com/$Z2K_OW_RE
 Z2K_OW_CDN_BASE="${Z2K_OW_CDN_BASE:-https://cdn.jsdelivr.net/gh/$Z2K_OW_REPO}"
 
 # Манифест канала (ветка — всегда свежий) и подпись к нему.
-Z2K_OW_MANIFEST_URL="${Z2K_OW_MANIFEST_URL:-$Z2K_OW_RAW_BASE/$Z2K_OW_BRANCH/UPDATES.json}"
+Z2K_OW_MANIFEST_URL="${Z2K_OW_MANIFEST_URL:-$Z2K_OW_RAW_BASE/$Z2K_OW_BRANCH/openwrt/release/manifest}"
 Z2K_OW_MANIFEST_SIG_URL="${Z2K_OW_MANIFEST_SIG_URL:-$Z2K_OW_MANIFEST_URL.sig}"
 
 # ow_file_url <ref> <путь в репозитории> — неизменяемый адрес файла релиза
