@@ -281,6 +281,76 @@ rm -f "$SB/tmp/status.json"
 st=$(W status 2>/dev/null)
 assert_eq "status: no status file → ready=0" "ready=0" "$(printf '%s' "$st" | grep -o 'ready=[01]')"
 
+# ---------- весь трафик: WARP включён, ничего не выбрано ----------
+# Решение владельца 11.10.2026: включённый WARP без выбранных устройств и без
+# включённых списков заворачивает весь интернет-трафик локальной сети. Вход в
+# цепочку — только с сегментов LAN (br+) и с частных адресов клиентов WG-сервера
+# (nwg+); с WAN — никогда, иначе ответы из интернета ушли бы в туннель.
+# Стаб iptables не умеет -F, поэтому состояние правил чистим перед прогонами.
+allrules() { grep -cxF -- "$1" "$SB/ipt.rules" 2>/dev/null || true; }
+scope() { W status 2>/dev/null | grep -o 'scope=[a-z]*'; }
+# Правила цепочки: стаб не умеет -F, а enable синхронизирует дважды, поэтому
+# проверяем наличие, а не число (в живом коде цепочку чистит -F перед заливкой).
+hasrule() { [ "$(allrules "$1")" -gt 0 ] && echo yes || echo no; }
+BR='-w -t mangle PREROUTING -i br+ -j Z2K_WARP'
+mv "$SB/z2k/lists/warp/my.txt" "$SB/my.txt.keep"
+printf 'GAME_WARP_ENABLED=0\n' > "$SB/z2k/config"
+rm -f "$SB/ipt.rules"; clearlogs; ready true ""
+W enable >/dev/null 2>&1
+assert_eq "all: LAN bridges enter the gate" "1" "$(allrules "$BR")"
+assert_eq "all: native VPN clients enter only from private sources" "4" \
+    "$(grep -c -- '^-w -t mangle PREROUTING -i nwg+ -s [0-9./]* -j Z2K_WARP$' "$SB/ipt.rules")"
+assert_eq "all: no unconditional entry, WAN never enters" "0" "$(allrules '-w -t mangle PREROUTING -j Z2K_WARP')"
+assert_eq "all: chain marks the rest after local returns" "yes" "$(hasrule '-w -t mangle Z2K_WARP -j MARK --set-xmark 0x989/0x989')"
+assert_eq "all: LAN destinations stay direct" "yes" "$(hasrule '-w -t mangle Z2K_WARP -d 192.168.0.0/16 -j RETURN')"
+assert_eq "all: multicast stays direct" "yes" "$(hasrule '-w -t mangle Z2K_WARP -d 224.0.0.0/3 -j RETURN')"
+assert_eq "all: status reports scope" "scope=all" "$(scope)"
+# Клиенты WDTT — только по своему тумблеру. Локальные адреса обязаны уйти
+# напрямую РАНЬШЕ их маркировки: удалённому клиенту нужен доступ к дому.
+WD='-w -t mangle PREROUTING -i wdtt0 -j Z2K_WARP'
+assert_eq "all: WDTT clients stay out without their opt-in" "0" "$(allrules "$WD")"
+printf 'GAME_WARP_ENABLED=1\nZ2K_WARP_WDTT=1\n' > "$SB/z2k/config"
+rm -f "$SB/ipt.rules"; W policy-sync >/dev/null 2>&1
+assert_eq "all: WDTT opt-in lets WDTT clients in" "1" "$(allrules "$WD")"
+assert_eq "all: WDTT clients marked by ingress" "yes" "$(hasrule '-w -t mangle Z2K_WARP -i wdtt0 -j MARK --set-xmark 0x989/0x989')"
+_lan=$(grep -nxF -- '-w -t mangle Z2K_WARP -d 192.168.0.0/16 -j RETURN' "$SB/ipt.rules" | head -1 | cut -d: -f1)
+_wd=$(grep -nxF -- '-w -t mangle Z2K_WARP -i wdtt0 -j MARK --set-xmark 0x989/0x989' "$SB/ipt.rules" | head -1 | cut -d: -f1)
+assert_eq "all: home LAN stays direct before WDTT marking" "yes" "$([ -n "$_lan" ] && [ -n "$_wd" ] && [ "$_lan" -lt "$_wd" ] && echo yes || echo no)"
+printf 'GAME_WARP_ENABLED=1\n' > "$SB/z2k/config"
+W policy-sync >/dev/null 2>&1
+assert_eq "all: WDTT opt-out removes their entry" "0" "$(allrules "$WD")"
+assert_eq "all: LAN entry survives the WDTT switch" "1" "$(allrules "$BR")"
+W disable >/dev/null 2>&1
+assert_eq "all: disable detaches LAN entries" "0" "$(allrules "$BR")"
+assert_eq "all: status off when disabled" "scope=off" "$(scope)"
+
+# Переход «весь трафик → списки» обязан снять входы с LAN: цепочка режима
+# списков без устройств кончается безусловным -j MARK и завернула бы всё.
+rm -f "$SB/ipt.rules"; ready true ""; W enable >/dev/null 2>&1
+mv "$SB/my.txt.keep" "$SB/z2k/lists/warp/my.txt"
+W enable >/dev/null 2>&1
+assert_eq "all → lists: LAN entries removed" "0" "$(allrules "$BR")"
+assert_eq "all → lists: status reports lists" "scope=lists" "$(scope)"
+mv "$SB/z2k/lists/warp/my.txt" "$SB/my.txt.keep"
+
+# Выбор человека решает, а не содержимое ipset: выбранный, но ещё не скачанный
+# игровой список и включённый пустой свой список — это режим списков.
+printf 'somegame\n' > "$SB/z2k/lists/warp/.enabled"
+rm -f "$SB/ipt.rules"; ready true ""; W enable >/dev/null 2>&1
+assert_eq "all: selected but missing game list keeps list mode" "0" "$(allrules "$BR")"
+rm -f "$SB/z2k/lists/warp/.enabled"
+: > "$SB/z2k/lists/warp/empty.txt"
+rm -f "$SB/ipt.rules"; ready true ""; W enable >/dev/null 2>&1
+assert_eq "all: enabled empty own list keeps list mode" "0" "$(allrules "$BR")"
+rm -f "$SB/z2k/lists/warp/empty.txt"
+printf 'aa:bb:cc:dd:ee:ff\n' > "$SB/z2k/lists/warp/devices.txt"
+rm -f "$SB/ipt.rules"; ready true ""; W enable >/dev/null 2>&1
+assert_eq "all: selected device means device mode" "0" "$(allrules "$BR")"
+assert_eq "all: status reports devices" "scope=devices" "$(scope)"
+rm -f "$SB/z2k/lists/warp/devices.txt"
+mv "$SB/my.txt.keep" "$SB/z2k/lists/warp/my.txt"
+W disable >/dev/null 2>&1; rm -f "$SB/ipt.rules"
+
 # ---------- remove ----------
 ready true ""; W enable >/dev/null 2>&1; clearlogs
 rc=0; W remove >/dev/null 2>&1 || rc=$?

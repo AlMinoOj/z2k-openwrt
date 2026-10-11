@@ -824,6 +824,17 @@ print_warp() {
     local on bin=/opt/sbin/z2k-warpd st=/tmp/z2k-warp/status.json dev=/opt/etc/z2k-warp/device.json
     on=$(grep -m1 '^GAME_WARP_ENABLED=' "${ZAPRET2_DIR}/config" 2>/dev/null | cut -d= -f2 | tr -d '" ')
     printf 'mode              : %s\n' "$([ "$on" = "1" ] && echo on || echo off)"
+    # Что заворачивается. С 11.10.2026 включённый WARP без устройств и без
+    # включённых списков ведёт в туннель весь интернет-трафик сети — вопрос
+    # «почему у меня всё через WARP» должен закрываться одной строкой.
+    if [ "$on" = "1" ] && [ -f "${ZAPRET2_DIR}/z2k-warp.sh" ]; then
+        case "$(sh "${ZAPRET2_DIR}/z2k-warp.sh" status 2>/dev/null | sed -n 's/.* scope=\([a-z]*\).*/\1/p')" in
+            all)     printf 'scope             : весь интернет-трафик локальной сети (нет ни устройств, ни включённых списков)\n' ;;
+            devices) printf 'scope             : весь интернет-трафик выбранных устройств (списки выключены)\n' ;;
+            lists)   printf 'scope             : адреса из включённых списков\n' ;;
+            *)       printf 'scope             : неизвестно (скрипт WARP не ответил)\n' ;;
+        esac
+    fi
     if [ -x "$bin" ]; then
         # СБОРКУ ОПОЗНАЁМ ПО СУММЕ, А НЕ ПО САМОНАЗВАНИЮ.
         #

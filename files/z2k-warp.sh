@@ -449,13 +449,60 @@ warp_pbr_up() {
     warp_policy_sync
 }
 
+# Есть ли в файле выбора хоть одна запись: не пустая строка и не комментарий.
+_warp_has_entries() {
+    awk '{ sub(/^[ \t]+/, ""); if ($0!="" && $0!~/^#/) found=1 } END { exit !found }' "$1" 2>/dev/null
+}
+
+# Destinations that stay direct in the whole-traffic modes: router/LAN,
+# private networks and non-unicast.
+WARP_LOCAL_DSTS="0.0.0.0/8 10.0.0.0/8 100.64.0.0/10 127.0.0.0/8 169.254.0.0/16 172.16.0.0/12 192.168.0.0/16 224.0.0.0/3"
+
 # Full-device mode is explicit: saved device selection and NO active list.
 # An empty/invalid active list must not silently expand to all destinations.
 warp_full_device_mode() {
-    awk '{ sub(/^[ \t]+/, ""); if ($0!="" && $0!~/^#/) found=1 } END { exit !found }' "$WARP_DEVICES_FILE" 2>/dev/null || return 1
+    _warp_has_entries "$WARP_DEVICES_FILE" || return 1
     # A selected but temporarily missing game list remains list mode.
-    if awk '{ sub(/^[ \t]+/, ""); if ($0!="" && $0!~/^#/) found=1 } END { exit !found }' "$WARP_ENABLED_FILE" 2>/dev/null; then return 1; fi
+    _warp_has_entries "$WARP_ENABLED_FILE" && return 1
     [ -z "$(warp_active_lists)" ]
+}
+
+# ВЕСЬ ТРАФИК СЕТИ. Решение владельца 11.10.2026: включённый WARP без выбранных
+# устройств и без включённых списков заворачивает весь интернет-трафик LAN —
+# люди просили, а 0.0.0.0/0 в список не положить (hash:net не берёт /0).
+#
+# Условия те же, что у режима устройства, кроме самих устройств, и решают по
+# ВЫБОРУ человека, а не по содержимому ipset. Поэтому выбранный, но ещё не
+# скачанный игровой список и включённый пустой свой список остаются режимом
+# списков (ничего не заворачиваем): упавшее обновление списков не превращает
+# «игры» во «весь интернет».
+warp_all_traffic_mode() {
+    _warp_has_entries "$WARP_DEVICES_FILE" && return 1
+    _warp_has_entries "$WARP_ENABLED_FILE" && return 1
+    [ -z "$(warp_active_lists)" ]
+}
+
+warp_wdtt_flag() { grep -m1 '^Z2K_WARP_WDTT=' "$CONFIG_FILE" 2>/dev/null | cut -d= -f2 | tr -d '" '; }
+
+# Входы в цепочку для режима «весь трафик» — только локальная сеть: br+ —
+# сегменты LAN Keenetic (дом, гости), nwg+ — клиенты его WG-сервера с частными
+# адресами, как и в режиме списков. WAN (ppp0, ethN) сюда не входит: иначе
+# ответы из интернета маркировались бы и уходили в туннель. Один список и для
+# установки, и для снятия (warp_policy_legacy_clear).
+warp_all_entries() {
+    local subnet iface ifaces
+    printf '%s\n' "-i br+"
+    for subnet in 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 100.64.0.0/10; do
+        printf '%s\n' "-i nwg+ -s $subnet"
+    done
+    # Клиенты WDTT входят только по своему тумблеру Z2K_WARP_WDTT, как и в
+    # режиме списков. Для снятия ($1=all) берём все интерфейсы WDTT независимо
+    # от тумблера: выключенный между установкой и снятием тумблер не должен
+    # оставить вход висеть.
+    if [ "$1" = all ] || [ "$(warp_wdtt_flag)" = 1 ]; then
+        ifaces=$(warp_wdtt_ifaces 2>/dev/null) || ifaces="wdtt0 wdttraw0"
+        for iface in $ifaces; do printf '%s\n' "-i $iface"; done
+    fi
 }
 
 # Destination matches (static and DNS-observed) all enter this chain. Device
@@ -465,11 +512,29 @@ warp_full_device_mode() {
 warp_policy_rules() {
     local ifaces iface wdtt_enabled subnet
     [ "$(warp_flag)" = 1 ] || return 0
+    if warp_all_traffic_mode; then
+        # Entered only from LAN, WG-server clients and (opt-in) WDTT clients —
+        # see warp_all_entries; never from WAN. Local destinations stay direct
+        # for everyone first, WDTT clients included: they need the home LAN.
+        for subnet in $WARP_LOCAL_DSTS; do
+            printf '%s\n' "-d $subnet -j RETURN"
+        done
+        ifaces=$(warp_wdtt_ifaces) || return 1
+        wdtt_enabled=$(warp_wdtt_flag)
+        for iface in $ifaces; do
+            if [ "$wdtt_enabled" = 1 ]; then
+                printf '%s\n' "-i $iface -j MARK --set-xmark $WARP_MARK/$WARP_MARK"
+            fi
+            printf '%s\n' "-i $iface -j RETURN"
+        done
+        printf '%s\n' "-j MARK --set-xmark $WARP_MARK/$WARP_MARK"
+        return 0
+    fi
     if warp_full_device_mode; then
         ifaces=$(warp_wdtt_ifaces) || return 1
         for iface in $ifaces; do printf '%s\n' "-i $iface -j RETURN"; done
         # Keep router/LAN, private networks and non-unicast destinations local.
-        for subnet in 0.0.0.0/8 10.0.0.0/8 100.64.0.0/10 127.0.0.0/8 169.254.0.0/16 172.16.0.0/12 192.168.0.0/16 224.0.0.0/3; do
+        for subnet in $WARP_LOCAL_DSTS; do
             printf '%s\n' "-d $subnet -j RETURN"
         done
         printf '%s\n' "-m set --match-set $WARP_IPSET_SRC src -j MARK --set-xmark $WARP_MARK/$WARP_MARK"
@@ -481,7 +546,7 @@ warp_policy_rules() {
         return 0
     fi
     ifaces=$(warp_wdtt_ifaces) || return 1
-    wdtt_enabled=$(grep -m1 '^Z2K_WARP_WDTT=' "$CONFIG_FILE" 2>/dev/null | cut -d= -f2 | tr -d '" ')
+    wdtt_enabled=$(warp_wdtt_flag)
     for iface in $ifaces; do
         if [ "$wdtt_enabled" = 1 ]; then
             printf '%s\n' "-i $iface -j MARK --set-xmark $WARP_MARK/$WARP_MARK"
@@ -541,6 +606,16 @@ warp_policy_legacy_clear() {
     while iptables -w -t mangle -C PREROUTING -m set --match-set "$WARP_IPSET_SRC" src -j Z2K_WARP 2>/dev/null; do
         iptables -w -t mangle -D PREROUTING -m set --match-set "$WARP_IPSET_SRC" src -j Z2K_WARP 2>/dev/null || return 1
     done
+    # Входы режима «весь трафик» снимаются при КАЖДОЙ синхронизации: цепочка
+    # режима списков без устройств кончается безусловным -j MARK, и забытый
+    # вход с br+ завернул бы через неё весь интернет.
+    warp_all_entries all | while IFS= read -r entry; do
+        # shellcheck disable=SC2086 # fixed generated match arguments
+        while iptables -w -t mangle -C PREROUTING $entry -j Z2K_WARP 2>/dev/null; do
+            # shellcheck disable=SC2086
+            iptables -w -t mangle -D PREROUTING $entry -j Z2K_WARP 2>/dev/null || exit 1
+        done
+    done || return 1
     warp_dns_client_sets | while read -r set client; do
         while iptables -w -t mangle -C PREROUTING -s "$client/32" -m set --match-set "$set" dst -j MARK --set-xmark "$WARP_MARK/$WARP_MARK" 2>/dev/null; do
             iptables -w -t mangle -D PREROUTING -s "$client/32" -m set --match-set "$set" dst -j MARK --set-xmark "$WARP_MARK/$WARP_MARK" 2>/dev/null || exit 1
@@ -581,6 +656,12 @@ warp_policy_sync() (
     [ "$(warp_flag)" = 1 ] || exit 0
     if warp_full_device_mode; then
         iptables -w -t mangle -A PREROUTING -m set --match-set "$WARP_IPSET_SRC" src -j Z2K_WARP 2>/dev/null || exit 1
+    fi
+    if warp_all_traffic_mode; then
+        warp_all_entries | while IFS= read -r entry; do
+            # shellcheck disable=SC2086 # fixed generated match arguments
+            iptables -w -t mangle -A PREROUTING $entry -j Z2K_WARP 2>/dev/null || exit 1
+        done || exit 1
     fi
     iptables -w -t mangle -C PREROUTING -m set --match-set "$WARP_IPSET" dst -j Z2K_WARP 2>/dev/null \
         || iptables -w -t mangle -A PREROUTING -m set --match-set "$WARP_IPSET" dst -j Z2K_WARP 2>/dev/null || exit 1
@@ -1022,7 +1103,14 @@ warp_status() {
     domain_error=$(_json_str "$WARP_DOMAIN_STATUS" error)
     [ -f "$WARP_DOMAIN_STATUS" ] || domain_error=unavailable
     domain_error=$(printf '%s' "$domain_error" | tr ' \t\r\n' '_' | cut -c1-120)
-    printf 'installed=%s enabled=%s ready=%s transport=%s endpoint=%s iface=%s addr=%s entries=%s devices=%s error=%s mem=%s plan=%s plan_err=%s license=%s domain_active=%s domain_rules=%s domain_pairs=%s domain_error=%s edge_colo=%s edge_country=%s edge_rtt_ms=%s edge_checked_at=%s edge_selection=%s\n' \
+    # scope — что сейчас заворачивается: off, all (весь трафик сети),
+    # devices (весь трафик выбранных устройств), lists (адреса из списков).
+    local scope=lists
+    if [ "${GAME_WARP_ENABLED_OVERRIDE:-$(warp_flag)}" != 1 ]; then scope=off
+    elif warp_all_traffic_mode; then scope=all
+    elif warp_full_device_mode; then scope=devices
+    fi
+    printf 'installed=%s enabled=%s ready=%s transport=%s endpoint=%s iface=%s addr=%s entries=%s devices=%s error=%s mem=%s plan=%s plan_err=%s license=%s domain_active=%s domain_rules=%s domain_pairs=%s domain_error=%s edge_colo=%s edge_country=%s edge_rtt_ms=%s edge_checked_at=%s edge_selection=%s scope=%s\n' \
         "$installed" "${GAME_WARP_ENABLED_OVERRIDE:-$(warp_flag)}" "$ready" \
         "$(_json_str "$WARP_STATUS" transport)" "$(_json_str "$WARP_STATUS" endpoint)" \
         "$(_json_str "$WARP_STATUS" iface)" "$(_json_str "$WARP_STATUS" addr)" \
@@ -1031,7 +1119,7 @@ warp_status() {
         "$domain_active" "${domain_rules:-0}" "${domain_pairs:-0}" "$domain_error" \
         "$(_json_str "$WARP_STATUS" edge_colo)" "$(_json_str "$WARP_STATUS" edge_country)" \
         "$(_json_raw "$WARP_STATUS" edge_rtt_ms)" "$(_json_raw "$WARP_STATUS" edge_checked_at)" \
-        "$(_json_str "$WARP_STATUS" edge_selection)"
+        "$(_json_str "$WARP_STATUS" edge_selection)" "$scope"
 }
 
 # Зачистка usque-эпохи — по уликам, а не по имени, и пакет — один раз.

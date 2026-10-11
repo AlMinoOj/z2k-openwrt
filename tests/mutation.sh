@@ -217,9 +217,23 @@ sh_mutant "enable without engine leaves the flag on" \
 
 # --set-mark затирает mark-word Keenetic; форма с маской — не косметика.
 sh_mutant "MARK regresses to --set-mark (clobbers the mark word)" \
-    '        printf '\''%s\n'\'' "-j MARK --set-xmark $WARP_MARK/$WARP_MARK"' \
-    '        printf '\''%s\n'\'' "-j MARK --set-mark $WARP_MARK"' \
+    '    else
+        printf '\''%s\n'\'' "-j MARK --set-xmark $WARP_MARK/$WARP_MARK"' \
+    '    else
+        printf '\''%s\n'\'' "-j MARK --set-mark $WARP_MARK"' \
     test_warp_scope.sh
+
+# То же для режима «весь трафик» (11.10.2026): у него своя строка MARK, и
+# якорь выше её не задевает.
+sh_mutant "all-traffic MARK regresses to --set-mark" \
+    '        printf '\''%s\n'\'' "-j MARK --set-xmark $WARP_MARK/$WARP_MARK"
+        return 0
+    fi
+    if warp_full_device_mode; then' \
+    '        printf '\''%s\n'\'' "-j MARK --set-mark $WARP_MARK"
+        return 0
+    fi
+    if warp_full_device_mode; then'
 
 # Selfheal при выключенном режиме — no-op, иначе реген воскрешает выключенную функцию.
 sh_mutant "selfheal runs with the mode off" \
