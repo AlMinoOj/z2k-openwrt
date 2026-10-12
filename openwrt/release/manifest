@@ -1,0 +1,183 @@
+#z2k-openwrt-manifest 1
+channel	openwrt-main
+seq	1
+version	v1.0.0
+upstream_base	p-86.19
+date	2026-10-12
+reset_state	0
+file	071cdd0f9539d7235473bdb7839839a75a828037d66880b0ad9e32b655d9dc84	644	extras/discord-voice-hosts.txt	/opt/zapret2/extras/discord-voice-hosts.txt
+file	5f9d99598cb450850954645f5bf5e5d3634bbaa80d997aa47f5211d3e760875c	755	files/S99zapret2.new	/opt/zapret2/init.d/z2k-engine
+file	a6cf5a695274d4f36b401cc62183895af11e68b02417638a070465c77f4caf00	644	files/etc/z2k-roots.pem	/opt/zapret2/etc/z2k-roots.pem
+file	f4589c57749f956bb30538197a521d7005f8b0a8723b4707e72405e51ddac50a	644	files/fake/quic_1.bin	/opt/zapret2/files/fake/quic_1.bin
+file	0e53683f2408bab1f52bc3db10c11b3a2bf238f68db64f4d0ea8aff37e07a61d	644	files/fake/quic_4.bin	/opt/zapret2/files/fake/quic_4.bin
+file	a7ea947b0efe4690b91f6180ff16c0f750443901f0f6310d94dca9f0b8606dac	644	files/fake/quic_5.bin	/opt/zapret2/files/fake/quic_5.bin
+file	97f544d62aaa0d85db91dbb611a3e1782647dda243777417d57096ed7e668a1c	644	files/fake/quic_6.bin	/opt/zapret2/files/fake/quic_6.bin
+file	f7a1c1cffc8f65bd47412b7ca5588653d21eec916bb79203c9914890a62874df	644	files/fake/quic_initial_dbankcloud_ru.bin	/opt/zapret2/files/fake/quic_initial_dbankcloud_ru.bin
+file	d5d77f90ff45489d246bd447c3e9f28e98891e206dc17c79d4de1da6bd0f18e8	644	files/fake/quic_initial_rutracker_org.bin	/opt/zapret2/files/fake/quic_initial_rutracker_org.bin
+file	f4589c57749f956bb30538197a521d7005f8b0a8723b4707e72405e51ddac50a	644	files/fake/quic_initial_www_google_com.bin	/opt/zapret2/files/fake/quic_initial_www_google_com.bin
+file	9cd5469309780ca56c0bd97266524a48c7ee529d02c3179cfecb20b260a59641	644	files/fake/stun.bin	/opt/zapret2/files/fake/stun.bin
+file	92b092ff4f9c18263ba17c108bf224f99ab6c8ede28353893504937a28dc161a	644	files/fake/syn_packet.bin	/opt/zapret2/files/fake/syn_packet.bin
+file	d4a111b9a9497f185283d1ff480a92db08372c2c2a3af8bd868ff798e64c2da7	644	files/fake/t2.bin	/opt/zapret2/files/fake/t2.bin
+file	72c0bbc8d02077e28f8b41574a0673ebbdcfb4a86274c3468160b11a320e17d1	644	files/fake/tls_clienthello_14.bin	/opt/zapret2/files/fake/tls_clienthello_14.bin
+file	eefeaf09dde8d69b1f176212541f63c68b314a33a335eced99a8a29f17254da8	644	files/fake/tls_clienthello_4pda_to.bin	/opt/zapret2/files/fake/tls_clienthello_4pda_to.bin
+file	f2162ff9d4ac745729f4c32c2182a84988b553ca511fb2a620fd2981fe25be6e	644	files/fake/tls_clienthello_activated.bin	/opt/zapret2/files/fake/tls_clienthello_activated.bin
+file	ec581c9877ebc4b69e6cdab48f46e0f7b0eeb67c5fefe849f21525faa1ff4f74	644	files/fake/tls_clienthello_gosuslugi_ru.bin	/opt/zapret2/files/fake/tls_clienthello_gosuslugi_ru.bin
+file	741bf7660081fe572f93582735d2c36ffbb93a0e59ff8bd7a6bced05ca8ade49	644	files/fake/tls_clienthello_max_ru.bin	/opt/zapret2/files/fake/tls_clienthello_max_ru.bin
+file	d6d63c53bc0e1d97e913a43fc4db34f6558bb807228bf6100e3b6863f0720404	644	files/fake/tls_clienthello_vk_com.bin	/opt/zapret2/files/fake/tls_clienthello_vk_com.bin
+file	936c2bee4cfb80aa3c426b2dcbcc834b3fbcd1adb17172959dc569c73a14275c	644	files/fake/tls_clienthello_www_google_com.bin	/opt/zapret2/files/fake/tls_clienthello_www_google_com.bin
+file	4ee0870abe0a0128600b0095189987ba1d210dae8bf963bc725aff49cf922624	644	files/fake/tls_clienthello_www_onetrust_com.bin	/opt/zapret2/files/fake/tls_clienthello_www_onetrust_com.bin
+file	79ffc4803151f5ded1de96d7dc1ecaba37ec2e4b2bb7985cecf8c7ff8da68975	644	files/lists/cf_extra_check_ips.txt	/opt/zapret2/files/lists/cf_extra_check_ips.txt /opt/zapret2/lists/cf_extra_check_ips.txt
+file	92292260255d9bed5a193a3d4fdde9a7fd1c5b40849b7d4943351b06e15712fc	644	files/lists/extra-domains.txt	/opt/zapret2/files/lists/extra-domains.txt /opt/zapret2/lists/extra-domains.txt
+file	a56b277a06466c6a6152d7a48c17010629ae6f50c038a55b9d3889202bc9a7f1	644	files/lists/extra_strats/TCP/RKN/Discord.txt	/opt/zapret2/files/lists/extra_strats/TCP/RKN/Discord.txt
+file	666b1c4daf031a1166174c84d804100f3b7ec96466ec7cb1337c0d45923f49b4	644	files/lists/extra_strats/TCP/RKN/List.txt	/opt/zapret2/files/lists/extra_strats/TCP/RKN/List.txt
+file	0c11a111406a57de2002c9cb6079d70f038a7a51bb57de7cb85237638a055c62	644	files/lists/extra_strats/TCP/YT/List.txt	/opt/zapret2/files/lists/extra_strats/TCP/YT/List.txt
+file	ae839e9808cdcfc7163061aebb85a6ce708140e66ea585bba13cd515add9803a	644	files/lists/extra_strats/TCP/YT_GV/List.txt	/opt/zapret2/files/lists/extra_strats/TCP/YT_GV/List.txt
+file	ca17efe4ab66ee34564f7744c6fa44a1cc66ab067a955c8316055eed5333bc0e	644	files/lists/extra_strats/UDP/YT/List.txt	/opt/zapret2/files/lists/extra_strats/UDP/YT/List.txt
+file	5570916896d740f962e7fd10e23c0784bbb78b7ce701497386fa8ccd092b27ae	644	files/lists/ipset-exclude.txt	/opt/zapret2/files/lists/ipset-exclude.txt /opt/zapret2/lists/ipset-exclude.txt
+file	b81609ca7944494664880f4fb68c2d56ae82ddc0358fe93709042837ee307a0e	644	files/lists/meta-ranges.txt	/opt/zapret2/files/lists/meta-ranges.txt /opt/zapret2/lists/meta-ranges.txt
+file	39d67b97698763e023c31c31ed1fa28856911518e07f2aebb728438695e568ee	644	files/lists/rkn-false-positive.txt	/opt/zapret2/files/lists/rkn-false-positive.txt /opt/zapret2/lists/rkn-false-positive.txt
+file	2f77549827c8dcf738fda417b60d0cca49a954ef0e86cf3e1684c910493c3537	644	files/lists/sni_wl_candidates.txt	/opt/zapret2/files/lists/sni_wl_candidates.txt /opt/zapret2/lists/sni_wl_candidates.txt
+file	e36f53fb1b612c23fa7c02c35836c34d0353c4670c0e6e8fb85e2272fff0d394	644	files/lists/tcp16_nets.txt	/opt/zapret2/files/lists/tcp16_nets.txt /opt/zapret2/lists/tcp16_nets.txt
+file	1c9acd98f3d9513b83342694c1ebc912608b0618e6edf1a98a66722f9e277c54	644	files/lists/tcp16_targets.txt	/opt/zapret2/files/lists/tcp16_targets.txt /opt/zapret2/lists/tcp16_targets.txt
+file	e6a64d3224dc507f6b9faf50dadf7f1594f056de5a1d5b2f02fd8f5d880851b8	644	files/lists/telegram_ips.txt	/opt/zapret2/files/lists/telegram_ips.txt /opt/zapret2/lists/telegram_ips.txt
+file	a9b033dcbd09939256d8783d3a9c70589165a17d2835c44c63b0665b372f28e0	644	files/lists/warp-endpoints.txt	/opt/zapret2/files/lists/warp-endpoints.txt /opt/zapret2/lists/warp-endpoints.txt
+file	1e0880fb044c28ef1cbf9643815a53845d10e24d7312383d7590f165302efe20	644	files/lists/warp-scan-pools.txt	/opt/zapret2/files/lists/warp-scan-pools.txt /opt/zapret2/lists/warp-scan-pools.txt
+file	e3118339de975d0a13c17c0cbb99e4f968a217dd579f30f94f71bd37cd2180e7	644	files/lists/youtube_ips.txt	/opt/zapret2/files/lists/youtube_ips.txt /opt/zapret2/lists/youtube_ips.txt
+file	d51f5e44b989b503729ae35b79cf80adf7e47ac96fde42d785e0ba6e501c28cb	644	files/lists/youtube_ips6.txt	/opt/zapret2/files/lists/youtube_ips6.txt /opt/zapret2/lists/youtube_ips6.txt
+file	b6811baa146879bd846462d241557d3cf93dcfff6d1fcc50ff24a42240ddab74	644	files/lua/z2k-alert.lua	/opt/zapret2/lua/z2k-alert.lua
+file	4b5efb6672f54dbe4d04440066f06e84d92e43c8534cdfb88d136028e6d8231f	644	files/lua/z2k-fooling-ext.lua	/opt/zapret2/lua/z2k-fooling-ext.lua
+file	b7d8ccc67180061637b05181e60df4cd5eb91bb0365b0aaa6ec5d99bd782a6d9	644	files/lua/z2k-modern-core.lua	/opt/zapret2/lua/z2k-modern-core.lua
+file	f7a46db2cb93978fc022ba8ace8bead0fa59182281f39ec371306253b529be93	644	files/lua/z2k-quic-silence.lua	/opt/zapret2/lua/z2k-quic-silence.lua
+file	073c24d9133484b9f2282f1e398b5963eb577b483c1cab8c29cfd6e7bf8acd9a	644	files/lua/z2k-range-rand.lua	/opt/zapret2/lua/z2k-range-rand.lua
+file	70d881fdd633d9a36eb29a8f5bb184a3be06a65e2125b551b027ff136c9c42ad	644	files/lua/z2k-state-persist.lua	/opt/zapret2/lua/z2k-state-persist.lua
+file	340002edff2035d1882431802cc0920b5d2faf7c733613a1051415b4816fdf9d	644	files/lua/z2k-tcp16.lua	/opt/zapret2/lua/z2k-tcp16.lua
+file	441c5054e002c17aa7223a8694fa943a62579643a03d99b0870a94060e358a2f	755	files/z2k-blocked-monitor.sh	/opt/zapret2/z2k-blocked-monitor.sh
+file	d080e119c894c796323f90d2fcdb1134038f144dc7c73d2e5fec8d4e7539c1a7	755	files/z2k-config-validator.sh	/opt/zapret2/z2k-config-validator.sh
+file	a526ae5fe47cfb5d0562d9aa0d4793c4821f34e2db6f9cc728a63e9059e33052	755	files/z2k-diag.sh	/opt/zapret2/z2k-diag.sh
+file	8248396c3289e4ae315d73aed7512ba8cb3660fe8bad04355753010a9b3722a4	755	files/z2k-dns-check.sh	/opt/zapret2/z2k-dns-check.sh
+file	754393c2441f56406b6c93a1471bba2f62302d3898a15439d8f9a18f7b503e92	755	files/z2k-geosite.sh	/opt/zapret2/z2k-geosite.sh
+file	315e3ef2ee35c2301f2e401d6d3633d2399b3b56682ac5141a4deccfd4ffbb86	755	files/z2k-insta-ip-refresh.sh	/opt/zapret2/z2k-insta-ip-refresh.sh
+file	371e7dca151ecf0ffd10a29d05ae07ee6815820cb3a317fc0a8ec006a192004b	755	files/z2k-tcp16-probe.sh	/opt/zapret2/z2k-tcp16-probe.sh
+file	d9b0494007a9f346ceb39dcae14d65a47f5e72247979b996e1dc2b61e84b59fa	755	files/z2k-tg-watchdog.sh	/opt/zapret2/tg-tunnel-watchdog.sh
+file	e7f8c83ab5e8de256d79eb00e54b103d63d5ba3020d8d00bef8ccd2286738850	755	files/z2k-update-lists.sh	/opt/zapret2/z2k-update-lists.sh
+file	97db4a85663e4b3a7c4943e495276f521a9ba961d8419df1059efdcceea655c5	644	files/z2k-warp-list-filter.awk	/opt/zapret2/z2k-warp-list-filter.awk
+file	d3a082e751fa61a898792db00631bdfdeb30701b2733ee94ba5946f3dbfe1d4e	755	files/z2k-warp.sh	/opt/zapret2/z2k-warp.sh
+file	e1203016155fab62a7ee0351663014a1663b0dfd3cd4b5d8c5f9a2cb35813ab3	755	lib/config.sh	/opt/zapret2/lib/config.sh
+file	a378b9bdf9df5750c80bb049942ab7aa3660f30d9b26ca8c674c3faa3f7c88e7	755	lib/config_official.sh	/opt/zapret2/lib/config_official.sh
+file	49f41c8be10b8ad5441f79dc4490a36d651f0833652dbddf4ae41e7da4d0cc38	755	lib/menu.sh	/opt/zapret2/lib/menu.sh
+file	5c1186493aeba1581e668246e4a23b9e0d5497905015c8dec5b8458683408c2d	755	lib/strategies.sh	/opt/zapret2/lib/strategies.sh
+file	eebd3bceb95d8203cb9a06878de839150ac79653ec7b5ec894c8f1bf0243872c	755	lib/utils.sh	/opt/zapret2/lib/utils.sh
+file	7f66e83516031bf66ea5f185804e0c90442507d7a75c95a7bc27f6b86d639129	755	lib/wan.sh	/opt/zapret2/lib/wan.sh
+file	7e44a9f94e442d87f67bce091548dc482c921fad49014face9af53e8ed3e9504	755	lib/webpanel.sh	/opt/zapret2/lib/webpanel.sh
+file	8548cda0ee940e0c8ecb4d00710e7f13e62565a5405d7a34d49b28068b5b8b0c	644	mtproxy-client/builds/tg-mtproxy-client-linux-386	/opt/sbin/tg-mtproxy-client
+file	135007503e0e3dd988ef44b93b9bba0c64d78d28c5428b86bcc203036b61c4b5	644	mtproxy-client/builds/tg-mtproxy-client-linux-amd64	/opt/sbin/tg-mtproxy-client
+file	04241943d997831fd02ce8f8499b7e511537d89e1fc5174b7da076fe51c49282	644	mtproxy-client/builds/tg-mtproxy-client-linux-arm	/opt/sbin/tg-mtproxy-client
+file	0219e1bb0a7ee04f2710392bfbd1ee90f5e99c9fcbe1033218daa03a9d80eec1	644	mtproxy-client/builds/tg-mtproxy-client-linux-arm64	/opt/sbin/tg-mtproxy-client
+file	c2cadb60a117567e04bccea1a81654f44060f05f4b4ae4f3a57b2bb276feb561	644	mtproxy-client/builds/tg-mtproxy-client-linux-mips	/opt/sbin/tg-mtproxy-client
+file	da3c1b0d24304037bb43f8eb3549afe98000937d39ced56f2650bf987933e83d	644	mtproxy-client/builds/tg-mtproxy-client-linux-mips64el	/opt/sbin/tg-mtproxy-client
+file	da3c1b0d24304037bb43f8eb3549afe98000937d39ced56f2650bf987933e83d	644	mtproxy-client/builds/tg-mtproxy-client-linux-mips64le	/opt/sbin/tg-mtproxy-client
+file	f1de6f9c1d19bee86dfd6a33e93a083935539e6bb3dc4e2b412b6b077fc4adee	644	mtproxy-client/builds/tg-mtproxy-client-linux-mipsel	/opt/sbin/tg-mtproxy-client
+file	f1de6f9c1d19bee86dfd6a33e93a083935539e6bb3dc4e2b412b6b077fc4adee	644	mtproxy-client/builds/tg-mtproxy-client-linux-mipsle	/opt/sbin/tg-mtproxy-client
+file	c3a789e6eb61ffd4542deb6b2c7a944524707973f3e18d3c1b80b48061f603dd	644	mtproxy-client/builds/tg-mtproxy-client-linux-ppc64	/opt/sbin/tg-mtproxy-client
+file	30b61bf7904782ec3f8826c0a855e4b0fbfb121e1ced5e96ca53bcf80b572651	644	mtproxy-client/builds/tg-mtproxy-client-linux-riscv64	/opt/sbin/tg-mtproxy-client
+file	8548cda0ee940e0c8ecb4d00710e7f13e62565a5405d7a34d49b28068b5b8b0c	644	mtproxy-client/builds/tg-mtproxy-client-linux-x86	/opt/sbin/tg-mtproxy-client
+file	a5c703a5372aa568dcf79a44e8e40f9d47363801c5cadd1886d6b694e5558c28	644	mtproxy-client/builds/z2k-rt-proxy-linux-amd64	/opt/sbin/z2k-rt-proxy
+file	27e3888f1756f40637c007d623d1f8ffbc6a9ba2a9f997d2ec4830b44c2695fb	644	mtproxy-client/builds/z2k-rt-proxy-linux-arm	/opt/sbin/z2k-rt-proxy
+file	b2983fe885d1b7afdbd6c352862e270bc1f58f806ea27c86821b095dd713b902	644	mtproxy-client/builds/z2k-rt-proxy-linux-arm64	/opt/sbin/z2k-rt-proxy
+file	d854b106d7e3b004c26834d3b7f2674ec64e089d7d0fbec979021616f8436fbc	644	mtproxy-client/builds/z2k-rt-proxy-linux-mips	/opt/sbin/z2k-rt-proxy
+file	efb5e2a526d1078a4878d38f54aa050fa7107227cc0964f008eb026f11a11b39	644	mtproxy-client/builds/z2k-rt-proxy-linux-mipsel	/opt/sbin/z2k-rt-proxy
+file	efb5e2a526d1078a4878d38f54aa050fa7107227cc0964f008eb026f11a11b39	644	mtproxy-client/builds/z2k-rt-proxy-linux-mipsle	/opt/sbin/z2k-rt-proxy
+file	24a0dd0343101f11b500eef05cf37ecd2b8756afc4d1b838bfc822cec5c088a2	755	openwrt/bin/z2k-cron	/opt/zapret2/openwrt/bin/z2k-cron
+file	384b4c31c66c85aba28cd3c8a411354948c91c76aeaf2b132b24728c4795714a	755	openwrt/bin/z2k-module	/opt/zapret2/openwrt/bin/z2k-module
+file	6e8e77df544a3113e1c56ecb37d64f610d97c65b27ea66eb77b948afd518df56	755	openwrt/bin/z2k-update	/opt/zapret2/openwrt/bin/z2k-update
+file	340f5972041cde64a965931f7d246888b95dad936230561593035e7ffcec9f41	755	openwrt/bin/z2k-warp-init	/opt/zapret2/openwrt/bin/z2k-warp-init
+file	db3b6b9f0284bcebd21291b2cbb3497b107008e13896dbc4b5fce7b34cce6b1c	644	openwrt/builds/z2k-detect-linux-386	/opt/sbin/z2k-detect
+file	36b17e6ef397331dabbc794d161b0fdf14ee03e236571774ae7668c98c97b650	644	openwrt/builds/z2k-detect-linux-amd64	/opt/sbin/z2k-detect
+file	98dfcdf892bdb2d7a8134acc64a37deebd6ff9a522054bb4a48f6a809a578f41	644	openwrt/builds/z2k-detect-linux-arm	/opt/sbin/z2k-detect
+file	664c34adacbe93a88986ca6b9580e27edfc8bbb3d0ad3212e9772092c206c6ac	644	openwrt/builds/z2k-detect-linux-arm64	/opt/sbin/z2k-detect
+file	c32dc0cc69a30a83e978e9348f26206153050d60009bab7c7137fb90b83edc75	644	openwrt/builds/z2k-detect-linux-mips	/opt/sbin/z2k-detect
+file	567c3c55003e4c1ae4cc32f265372ef2c69c426eed1719da51bd2273249076d9	644	openwrt/builds/z2k-detect-linux-mips64le	/opt/sbin/z2k-detect
+file	88e7d9d6331e10ccc4c25093f299716694f34c78dccdc234e6e92d2259ad48bd	644	openwrt/builds/z2k-detect-linux-mipsle	/opt/sbin/z2k-detect
+file	fe300a0291d86fc1a2e46bc37b1d5d5f183697fb5d73af678530b0cb8ee54959	644	openwrt/builds/z2k-detect-linux-ppc64	/opt/sbin/z2k-detect
+file	809f5c1ac4a326193ceb1a7ca32d9b3f592583e8534e116ecb8e42aad384918b	644	openwrt/builds/z2k-detect-linux-riscv64	/opt/sbin/z2k-detect
+file	1e25d9da360195c10947d8c96f9e667eab99e9bcd1dcba2bcc7f4d171fce733f	644	openwrt/builds/z2k-warpd-linux-amd64	/opt/sbin/z2k-warpd
+file	a96a38879808d4733c68433297659724af7fbbd7c156c740bddbed94b1088a54	644	openwrt/builds/z2k-warpd-linux-arm	/opt/sbin/z2k-warpd
+file	c9bd1577d4177477ae2320625bbbc5b397e1ee188745609c47778a88fc89b212	644	openwrt/builds/z2k-warpd-linux-arm64	/opt/sbin/z2k-warpd
+file	9d3766159f9683066bef0ef4d35fb0dee3a7a9f50fe5dfc27a25c8fdb437d2f0	644	openwrt/builds/z2k-warpd-linux-mips	/opt/sbin/z2k-warpd
+file	66a0625f260904bde68e634f50362f1d9302415dfa5ad8a702a2d577f9541160	644	openwrt/builds/z2k-warpd-linux-mips64el	/opt/sbin/z2k-warpd
+file	fad85b21e6d8a471aec86fe4b751c05e738a5f8690f1dad77a9d0e75a085c08c	644	openwrt/builds/z2k-warpd-linux-mipsel	/opt/sbin/z2k-warpd
+file	fad85b21e6d8a471aec86fe4b751c05e738a5f8690f1dad77a9d0e75a085c08c	644	openwrt/builds/z2k-warpd-linux-mipsle	/opt/sbin/z2k-warpd
+file	82fd4c8d94fe03e818debee263e7cdc108f2fcda5a8be9e84611845eac3f7148	644	openwrt/builds/z2k-warpd-linux-ppc64	/opt/sbin/z2k-warpd
+file	6542600abe341c653a57bd06cab23ad4e243085dc56f14fdf17919832fa40ee5	644	openwrt/builds/z2k-warpd-linux-riscv64	/opt/sbin/z2k-warpd
+file	a468a08aa8eb4f1d28a265ed18a7d3e6a9b944a7bd49a319b9f53950239da7b0	644	openwrt/builds/z2k-warpd-linux-x86	/opt/sbin/z2k-warpd
+file	f48b8ca9cfd11fe39b253a6b811df453c5dc4fcc45383131ae226e9082e07c81	644	openwrt/engine.pin	/opt/zapret2/openwrt/engine.pin
+file	4c94d1d0648ed0991daa082044ca4436adf6136e54248d833caffc2754fa74df	644	openwrt/etc/z2k-update.pub	/opt/zapret2/etc/z2k-update.pub
+file	8c9d8bb6145a2e72dbee2e438a51153a1187a68fc73fd17e2addfa63940e9193	644	openwrt/fw4/30-z2k-warp.nft	/usr/share/nftables.d/chain-pre/forward/30-z2k-warp.nft
+file	a7ae1d00b0b427cae8a8159b530c32c388de205bc3a8aba01dfa9e0c1348aaf6	755	openwrt/hotplug/90-z2k	/etc/hotplug.d/iface/90-z2k
+file	00208e1d2747a84b8871f382ecd4563bdf280d5c14a2646ac5ecdab8d6723012	755	openwrt/init.d/z2k	/etc/init.d/z2k
+file	ead02ed40ccc96d33aafdadede2ab0a8ecfc9cbf43c54574f7c3e66176b19405	755	openwrt/init.d/z2k-panel	/etc/init.d/z2k-panel
+file	97886eb21b05eed1e7ff5d96464c1d95a3d93ed5494cbe423197f650636d016c	755	openwrt/init.d/z2k-rtproxy	/etc/init.d/z2k-rtproxy
+file	cb104035698f277ade7c4cf21e2287ded8b5c0c2a83d7bc5089d4d9d30a73c01	755	openwrt/init.d/z2k-tg	/etc/init.d/z2k-tg
+file	207156a8e59bcea3d9946c922f2e2e3642f24f8ece08c7f8fbbabcb8b4908d59	755	openwrt/init.d/z2k-warp	/etc/init.d/z2k-warp
+file	c635660c80e4ec8093512c54e2ea88726c7963bd80b3306b380df531c9cb7212	755	openwrt/install.sh	/opt/zapret2/openwrt/install.sh
+file	47d7d52fe86f1a77bcba9a3cde376fbe30be3115e0734d046b30897d7d76113e	755	openwrt/lib/channel.sh	/opt/zapret2/openwrt/lib/channel.sh
+file	22945ebc3e7afc2f4dd42b0b7a840954d5ba55467db1bf27880e8c23e71f5088	755	openwrt/lib/diag-openwrt.sh	/opt/zapret2/openwrt/lib/diag-openwrt.sh
+file	2aaf2335dce4cce58e6a7660163c02661e986546b6b09240a74e6f953fe53049	755	openwrt/lib/engine.sh	/opt/zapret2/openwrt/lib/engine.sh
+file	42b8d7d56f08ce4526b6e784f5535c45495f1c412916e16485da5bccc737d51b	755	openwrt/lib/layout.sh	/opt/zapret2/openwrt/lib/layout.sh
+file	05e5071e0715826776f3621c5880d9946e9f086e63e641e63db6a80791e57b0f	755	openwrt/lib/manifest.sh	/opt/zapret2/openwrt/lib/manifest.sh
+file	5d0889b7ae2187e58ed33733d100ff39f1e4449312fca48976543fe95160b636	755	openwrt/lib/modules.sh	/opt/zapret2/openwrt/lib/modules.sh
+file	328fcec22ced67023f4aa751bb884748cb65dada8aa9143eee1911692f482437	755	openwrt/lib/ndmc-dnsmasq.sh	/opt/zapret2/openwrt/lib/ndmc-dnsmasq.sh
+file	b687645bbeca4df88225c0b04f256c4e114231c6610ead298a4d04ae92c33df6	755	openwrt/lib/panel-openwrt.sh	/opt/zapret2/openwrt/lib/panel-openwrt.sh
+file	b742347d471a05ab6b8d05f42a7ddc5e73c6aa0171f5ff27470fd7b52abb5d23	755	openwrt/lib/platform.sh	/opt/zapret2/openwrt/lib/platform.sh
+file	8607c994ee685850981f65ebe458e25faec2bef8100e9bdc15f4a0007d8d1a60	755	openwrt/lib/postinstall.sh	/opt/zapret2/openwrt/lib/postinstall.sh
+file	cce2d2a7096a631c2597c52176cc97823766d42576f8e4cdb6af277bca2ba38c	755	openwrt/lib/s99-openwrt.sh	/opt/zapret2/openwrt/lib/s99-openwrt.sh
+file	4409b21699ba1888c7086360ed34d15f477e12f1484ea9298d71de804568840c	755	openwrt/lib/tg-redirect.sh	/opt/zapret2/z2k-tg-redirect.sh
+file	ff83e52387838aa2c7f845878f4055082077677597e1a4d99b307af0276d8072	755	openwrt/lib/update.sh	/opt/zapret2/openwrt/lib/update.sh
+file	77dc22290425105198865ed81fa3ba2783058001a2d8351b37f307e07ee7d18e	755	openwrt/lib/warp-openwrt.sh	/opt/zapret2/openwrt/lib/warp-openwrt.sh
+file	d69d7a9bb27f4c56b5766d5d172f055b6a05b4b1ced8671b9f3989ee5bab4dc4	755	openwrt/lib/z2k-config.sh	/opt/zapret2/openwrt/lib/z2k-config.sh
+file	f83b22a6922c3fc59ccc3c5e67432b64b5fa862c61972e611ba8c210934e600a	755	openwrt/uninstall.sh	/opt/zapret2/openwrt/uninstall.sh
+file	89768672aa5726c496fd977d1aac3693f4c5a04861ff585a125023cbac5dfe78	644	openwrt/www/platform.json	/opt/zapret2/www/platform.json
+file	f5c74157344b29cd28e05d967e947c3f6c2e88ef15c211971b6cbd7e501b9836	644	quic_strats.ini	/opt/zapret2/quic_strats.ini
+file	576ce4ffa56529a8b39cebf09e4b7249ac9c77bef211769899c4b657b9160289	644	strats_new2.txt	/opt/zapret2/strats_new2.txt
+file	80b91c7a24866d113608ec39aa36cdc2d0f7cf1b5c305c49caf5e5de693d9a54	755	webpanel/cgi/actions.sh	/opt/zapret2/webpanel/cgi/actions.sh
+file	db86e6bc4e0f89aa5fa0399aa59befba340c3e38f191ef36afa0b11916570a74	755	webpanel/cgi/api.sh	/opt/zapret2/webpanel/cgi/api.sh
+file	5affbff160dff2edb198789458b75232465a2264c68a95ff7a84f787ab18ec0a	755	webpanel/cgi/auth.sh	/opt/zapret2/webpanel/cgi/auth.sh
+file	e17a7953047aef3d215cf071297b7378ccd2d0a8a7a88f76a0bcad8abfd0455f	644	webpanel/lighttpd.conf	/opt/zapret2/webpanel/lighttpd.conf.in
+file	4acce04edc120e996e33818adf68efe0225a553676f79cb2ff59f997d5171e3a	644	webpanel/www/app.js	/opt/zapret2/www/app.js
+file	1b011055277d598f2384c9485bfffcd7aeb7f7a09f99c72748afc96617bc3fd4	644	webpanel/www/favicon.svg	/opt/zapret2/www/favicon.svg
+file	98651a0dc8960be552a69783b5b35d3a00ccb999584d9a152b50632c8e87bbcf	644	webpanel/www/fonts/FiraCode-400-cyrillic.woff2	/opt/zapret2/www/fonts/FiraCode-400-cyrillic.woff2
+file	d32d5b5a7c9720cf3812f7d1e3ebdb54116f8f656e7471a03a5a93bdd93c98b3	644	webpanel/www/fonts/FiraCode-400-latin.woff2	/opt/zapret2/www/fonts/FiraCode-400-latin.woff2
+file	09983c6cab069917897596945713d695a3c682d0d81896f80ca2c4c792852f4e	644	webpanel/www/fonts/FiraSans-400-cyrillic.woff2	/opt/zapret2/www/fonts/FiraSans-400-cyrillic.woff2
+file	7b8f0fbf813f59df6e7df17410a84850c3e690f98c90b9273371ef83796f8bc5	644	webpanel/www/fonts/FiraSans-400-latin.woff2	/opt/zapret2/www/fonts/FiraSans-400-latin.woff2
+file	9e677029dbcd0eba88b93e9e1eeaa6535b8a9b64bdc55a3a8981a8708240ba05	644	webpanel/www/fonts/FiraSans-500-cyrillic.woff2	/opt/zapret2/www/fonts/FiraSans-500-cyrillic.woff2
+file	8a76b4c523d2fcf672c0aa234e33e2c2dea66f11f328c74423d0f551a6fe5a65	644	webpanel/www/fonts/FiraSans-500-latin.woff2	/opt/zapret2/www/fonts/FiraSans-500-latin.woff2
+file	df1ce94b652f2df08ca6cbf0f89483316f01489bf9aa4ae49089d5f8fe3e0eca	644	webpanel/www/fonts/FiraSans-600-cyrillic.woff2	/opt/zapret2/www/fonts/FiraSans-600-cyrillic.woff2
+file	f3cc7b2756c566cf8172bfd269d805c4a1eb953f6b6ce8bf2b2ddf49c5422189	644	webpanel/www/fonts/FiraSans-600-latin.woff2	/opt/zapret2/www/fonts/FiraSans-600-latin.woff2
+file	42a8013e902099b563e434d3ccb3bed87ff6d6af8d80fe51ff203f2ac487673b	644	webpanel/www/fonts/FiraSans-700-cyrillic.woff2	/opt/zapret2/www/fonts/FiraSans-700-cyrillic.woff2
+file	811e73619cc2909792e8fa134c8d1ed714b898310dd4cc218fc29e40a5dc2890	644	webpanel/www/fonts/FiraSans-700-latin.woff2	/opt/zapret2/www/fonts/FiraSans-700-latin.woff2
+file	82fc88391f516de7924d1cbf07a4ada5bccb27de09cd1ab21b7c1e3c200fd8e2	644	webpanel/www/index.html	/opt/zapret2/www/index.html
+file	3e2217758cde6d87f4809aaf65c4aafca582b936d9c53b19abb4adac1479fdef	644	webpanel/www/js/chrome.js	/opt/zapret2/www/js/chrome.js
+file	eaa798b49c02373a1cffcdee447587f9969194323dd5471ac74a07d4af7b235f	644	webpanel/www/js/core/api.js	/opt/zapret2/www/js/core/api.js
+file	04230b654e8f1aac8f89ae1abbbe2e77eed7b71e9b685baf6c3b3f4f1cbd13af	644	webpanel/www/js/core/auth.js	/opt/zapret2/www/js/core/auth.js
+file	161aebf7108acd08250acd93b5c5008f428cbb45d89edf303c069f5747bb0c13	644	webpanel/www/js/core/clipboard.js	/opt/zapret2/www/js/core/clipboard.js
+file	2f05882a97712ed090dd3d8bdb3dd843c3c5a41ba3bcece160ffdf140f8350a3	644	webpanel/www/js/core/dom.js	/opt/zapret2/www/js/core/dom.js
+file	98c67d11d5e895092a417efbca43a22e75fe47e91762ab203d28acd3fd1aa321	644	webpanel/www/js/core/domain-list-editor.js	/opt/zapret2/www/js/core/domain-list-editor.js
+file	7146d39332c137f19d8a36e15d3e98f75c04bd0d132c4b2bd220b2fb94ae1814	644	webpanel/www/js/core/loadorder.js	/opt/zapret2/www/js/core/loadorder.js
+file	21b8373e69aeff39e6fa2ac5f2427899786506a50ba1937da60d9ec16c6e3bf0	644	webpanel/www/js/core/toast.js	/opt/zapret2/www/js/core/toast.js
+file	f05e2250c94649848185f6b12e45d5fb382b3ca106a773550db1675d0e830318	644	webpanel/www/js/core/whitelist.js	/opt/zapret2/www/js/core/whitelist.js
+file	0f08852ec8202fb451a51f1d9a5745835a445e892905d4840fc4b1dbc4fab20b	644	webpanel/www/js/job.js	/opt/zapret2/www/js/job.js
+file	66d4121a053f34d62ab3682e7096af8df0d970225f8a3284cd7a221519538e4d	644	webpanel/www/js/pages/credits.js	/opt/zapret2/www/js/pages/credits.js
+file	a0383fa9eb839d8fe4136d539bd2c52149e241b638a38bee468965d1b6ac8af0	644	webpanel/www/js/pages/dashboard.js	/opt/zapret2/www/js/pages/dashboard.js
+file	435921bff2dd8a228222147a33dd9fe1308209a139adbccb00056dfc4869179d	644	webpanel/www/js/pages/diag.js	/opt/zapret2/www/js/pages/diag.js
+file	65e3a12bcb4afb84cd8b837bb15ec7520727417d0f6a9562e89f65d939cff886	644	webpanel/www/js/pages/exclude.js	/opt/zapret2/www/js/pages/exclude.js
+file	5a75a821495cc1e63d52f8d39422ef654c947d3fde83eb1b319cc5c95102d897	644	webpanel/www/js/pages/extra-domains.js	/opt/zapret2/www/js/pages/extra-domains.js
+file	00a08c29818959e63ef8df7ca96fb8551fe7a9b0b90763c35913a16df1262b5f	644	webpanel/www/js/pages/policy.js	/opt/zapret2/www/js/pages/policy.js
+file	7574d60de58d5bec4103aaae363c1c67ea0decd7263923f70865393835a5e959	644	webpanel/www/js/pages/strategies.js	/opt/zapret2/www/js/pages/strategies.js
+file	ea84a2f9a20e743c2fddd4dcd8d66899f8675dcc7f56332f2709a09aa44c070e	644	webpanel/www/js/pages/strategy-pick.js	/opt/zapret2/www/js/pages/strategy-pick.js
+file	fdde7cb24dc45d416f546030226c748367b133ff280f8d934db1d8655c74803d	644	webpanel/www/js/pages/toggles.js	/opt/zapret2/www/js/pages/toggles.js
+file	f3ab4ab494aca562cd5e21132a37aa3d2cd866be4de0446ab58a66620ca09ac9	644	webpanel/www/js/pages/update.js	/opt/zapret2/www/js/pages/update.js
+file	5fbccc3769a87ded0254fa30c07331c143974c3f251bcf41617c7213b0f899aa	644	webpanel/www/js/pages/warp.js	/opt/zapret2/www/js/pages/warp.js
+file	3bae8e6ec636585c1a1904c146262d4a384700d319e6653117d95825f5544a57	644	webpanel/www/js/router.js	/opt/zapret2/www/js/router.js
+file	e26d1875dbd8b96c42457f231dad98ad2e23483700cc22e16249cc647e2017fa	644	webpanel/www/js/state-model.js	/opt/zapret2/www/js/state-model.js
+file	9921b980c067a55ab63595954dac637b5a296eba4b66726a272449d56ae9ec73	644	webpanel/www/style.css	/opt/zapret2/www/style.css
+release	v1.0.0	2026-10-12	p-86.19	Первый релиз
