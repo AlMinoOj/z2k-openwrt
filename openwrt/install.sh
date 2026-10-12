@@ -173,7 +173,7 @@ if [ -z "${Z2K_OW_NO_START:-}" ]; then
 				/etc/init.d/lighttpd stop >/dev/null 2>&1
 				/etc/init.d/lighttpd disable >/dev/null 2>&1
 			fi
-			/etc/init.d/z2k-panel enable && /etc/init.d/z2k-panel restart
+			/etc/init.d/z2k-panel enable && /etc/init.d/z2k-panel restart 2>/dev/null  # stop незапущенной службы ругается «Command failed»
 			say "вебпанель: http://$(cat "$ZD/webpanel/bind" 2>/dev/null):$(cat "$ZD/webpanel/port" 2>/dev/null)/"
 		else
 			warn "lighttpd не установился — вебпанель не запущена"
