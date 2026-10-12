@@ -175,6 +175,10 @@ run_steps() {
 				else log "обход выключен в конфиге — не перезапускаю"; fi ;;
 			cron) sh "$ZD/openwrt/bin/z2k-cron" install >/dev/null 2>&1 || rc=1 ;;
 			fw4)  fw4 -q reload >/dev/null 2>&1 || rc=1 ;;
+			restart-panel)
+				if [ -x "$R/etc/init.d/z2k-panel" ] && "$R/etc/init.d/z2k-panel" enabled; then
+					"$R/etc/init.d/z2k-panel" restart >/dev/null 2>&1 || rc=1
+				fi ;;
 			restart-tg|restart-rtproxy|restart-warp)
 				# Модуль выключен — его службу не трогаем.
 				local svc; svc=$(ow_module_field "${s#restart-}" 4)
@@ -290,8 +294,29 @@ cmd_apply() {
 	log "готово: $ver"
 }
 
+# json — проверенный манифест канала в формате UPDATES.json апстрима для
+# вебпанели (current + history по записи в строке, старые сверху): её
+# апстримный код считает «отстаём на N» и показывает, что нового.
+cmd_json() {
+	mkdir -p "$TMP"
+	fetch_manifest >&2
+	awk -F '\t' '
+		function esc(s) { gsub(/\\/, "\\\\", s); gsub(/"/, "\\\"", s); return s }
+		$1 == "channel" { ch = $2 }
+		$1 == "version" { cur = $2 }
+		$1 == "release" { n++; v[n] = $2; d[n] = $3; u[n] = $4; t[n] = $5 }
+		END {
+			printf "{\n  \"schema\": 1,\n  \"channel\": \"%s\",\n  \"current\": \"%s\",\n  \"history\": [\n", esc(ch), esc(cur)
+			for (i = n; i >= 1; i--)
+				printf "{\"v\": \"%s\", \"type\": \"patch\", \"ts\": \"%sT00:00:00Z\", \"desc\": \"%s (z2k %s)\"}%s\n",
+					esc(v[i]), esc(d[i]), esc(t[i]), esc(u[i]), (i > 1 ? "," : "")
+			printf "  ]\n}\n"
+		}' "$TMP/manifest"
+}
+
 case "${1:-}" in
 	check)     cmd_check ;;
+	json)      cmd_json ;;
 	apply)     shift; cmd_apply "$@" ;;
 	status)    cmd_status ;;
 	run-steps) shift; mkdir -p "$TMP"; run_steps "$@" ;;

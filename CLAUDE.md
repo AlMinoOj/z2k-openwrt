@@ -44,6 +44,13 @@
 - nft: `policy` — зарезервированное слово; accept в своей таблице не отменяет reject fw4 (форвард — через include `chain-pre/forward`); большие сеты — через `nft -f -`.
 - busybox OpenWrt: нет `pkill`, `timeout`; procd `status` = 0 и при «active with no instances».
 
+## Вебпанель (фаза 6)
+
+- lighttpd из пакетов (не uhttpd: тот режет заголовки X-Z2K-Panel/Sec-Fetch-Site), `openwrt/init.d/z2k-panel`, шаблон `webpanel/lighttpd.conf`.
+- Хук в `webpanel/cgi/api.sh` -> `openwrt/lib/panel-openwrt.sh`; вход через rpcd (realm "rpcd", правка `www/js/core/auth.js`); лишнее прячет `toggles.js` по `openwrt/www/platform.json`.
+- CGI под `set -u`: всё OpenWrt-библиотечное (jshn.sh) — в подоболочке с `set +u`.
+- Стенд: панель на 127.0.0.1:18088 (Host: 192.168.1.1:8088, заголовок X-Z2K-Panel: 1); тестовый пароль root ВМ — scratchpad/vm/test-root-pass, вход по SSH — ключом.
+
 ## Справка по апстриму
 
 - Устройство: `ARCHITECTURE.md`, релизы: `RELEASING.md`.

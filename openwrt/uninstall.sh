@@ -16,7 +16,7 @@ fi
 nft delete table inet zapret2 2>/dev/null
 [ -f /opt/zapret2/openwrt/bin/z2k-cron ] && sh /opt/zapret2/openwrt/bin/z2k-cron remove >/dev/null 2>&1
 rm -f /usr/bin/z2k-update /usr/bin/z2k-module
-for s in z2k-tg z2k-rtproxy z2k-warp; do
+for s in z2k-tg z2k-rtproxy z2k-warp z2k-panel; do
 	[ -x /etc/init.d/$s ] && { /etc/init.d/$s stop >/dev/null 2>&1; /etc/init.d/$s disable >/dev/null 2>&1; }
 	rm -f /etc/init.d/$s
 done
@@ -32,9 +32,9 @@ if [ -f /usr/share/nftables.d/chain-pre/forward/30-z2k-warp.nft ]; then
 fi
 
 rm -f /etc/init.d/z2k /etc/hotplug.d/iface/90-z2k
-for l in S99zapret2 S98tg-tunnel S96z2k-rt-proxy S51z2k-warp; do [ -L /opt/etc/init.d/$l ] && rm -f /opt/etc/init.d/$l; done
+for l in S99zapret2 S98tg-tunnel S96z2k-rt-proxy S51z2k-warp S96z2k-webpanel; do [ -L /opt/etc/init.d/$l ] && rm -f /opt/etc/init.d/$l; done
 rmdir /opt/etc/init.d 2>/dev/null
-rm -rf /opt/zapret2 /opt/etc/zapret2 /tmp/z2k-work /tmp/z2k-traffic-debug
+rm -rf /opt/zapret2 /opt/etc/zapret2 /opt/etc/z2k /tmp/z2k-work /tmp/z2k-traffic-debug
 rmdir /opt/etc /opt 2>/dev/null
 
 say "z2k удалён"

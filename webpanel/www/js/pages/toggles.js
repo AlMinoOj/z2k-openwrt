@@ -416,6 +416,15 @@ export async function renderToggles() {
     if (enableBtn) enableBtn.title = tgRunning ? "Туннель уже запущен" : "";
     if (disableBtn) disableBtn.title = tgRunning ? "" : "Туннель уже остановлен";
   }
+  // OPENWRT: спрятать то, чего на этой платформе нет (PPE, маршрутный кэш,
+  // политика доступа Keenetic). Список — в www/platform.json от z2k-openwrt;
+  // на Keenetic файла нет, и ничего не прячется.
+  fetch("platform.json", { cache: "no-store" }).then(r => (r.ok ? r.json() : null)).then(p => {
+    if (!p) return;
+    (p.hide_toggles || []).forEach(k =>
+      $app.querySelectorAll(`.toggle-row[data-key="${k}"]`).forEach(e => { e.hidden = true; }));
+    if (p.hide_policy) { const c = $app.querySelector("#policy-card"); if (c) c.hidden = true; }
+  }).catch(() => {});
   await loadTogglesState();
   // Пока читался /status, юзер мог уйти — вешать обработчики уже некуда, а
   // querySelector вернёт null и уронит остаток функции.

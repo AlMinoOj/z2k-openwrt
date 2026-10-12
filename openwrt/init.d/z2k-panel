@@ -1,0 +1,42 @@
+#!/bin/sh /etc/rc.common
+# z2k-openwrt: вебпанель z2k (lighttpd + CGI).
+#
+# lighttpd, а не встроенный uhttpd: uhttpd передаёт в CGI только стандартные
+# заголовки, а защита панели от CSRF/DNS rebinding (auth.sh) опирается на
+# X-Z2K-Panel и Sec-Fetch-Site. Конфиг — шаблон апстрима
+# (webpanel/lighttpd.conf -> /opt/zapret2/webpanel/lighttpd.conf.in).
+#
+# Адрес: /opt/etc/z2k/webpanel/{port,bind} (как у z2k), по умолчанию — порт
+# 8088 на адресе LAN. Панель слушает только локальную сеть.
+
+START=97
+STOP=10
+USE_PROCD=1
+
+TPL=/opt/zapret2/webpanel/lighttpd.conf.in
+CONF=/var/etc/z2k-panel.conf
+ST=/opt/etc/z2k/webpanel
+
+start_service()
+{
+	command -v lighttpd >/dev/null 2>&1 || { echo "z2k-panel: нет lighttpd"; return 0; }
+	[ -f "$TPL" ] || return 0
+
+	local port bind
+	port=$(cat "$ST/port" 2>/dev/null); port=${port:-8088}
+	bind=$(cat "$ST/bind" 2>/dev/null)
+	[ -n "$bind" ] || bind=$(uci -q get network.lan.ipaddr | cut -d/ -f1)
+	[ -n "$bind" ] || bind=192.168.1.1
+
+	mkdir -p /var/etc /tmp/z2k-log /opt/zapret2/webpanel
+	# auth.sh пускает запросы с Host, равным адресу привязки панели.
+	echo "$bind" > /opt/zapret2/webpanel/bind
+	echo "$port" > /opt/zapret2/webpanel/port
+	sed -e "s|@WWW_DIR@|/opt/zapret2/www|" -e "s|@PORT@|$port|" -e "s|@BIND@|$bind|" \
+	    -e "s|@IPV6_SOCKET@||" "$TPL" > "$CONF"
+
+	procd_open_instance panel
+	procd_set_param command lighttpd -D -f "$CONF"
+	procd_set_param respawn 3600 5 0
+	procd_close_instance
+}

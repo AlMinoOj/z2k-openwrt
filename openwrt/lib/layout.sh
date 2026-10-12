@@ -60,6 +60,12 @@ ow_layout_targets()
 		files/z2k-insta-ip-refresh.sh) echo "$zd/z2k-insta-ip-refresh.sh" ;;
 		openwrt/fw4/*.nft)           echo "/usr/share/nftables.d/chain-pre/forward/${p#openwrt/fw4/}" ;;
 
+		# --- вебпанель (lighttpd + CGI) ---
+		webpanel/cgi/*.sh)           echo "$zd/webpanel/cgi/${p#webpanel/cgi/}" ;;
+		webpanel/www/*)              echo "$zd/www/${p#webpanel/www/}" ;;
+		webpanel/lighttpd.conf)      echo "$zd/webpanel/lighttpd.conf.in" ;;
+		openwrt/www/*)               echo "$zd/www/${p#openwrt/www/}" ;;
+
 		# --- библиотеки z2k (генераторы, утилиты) ---
 		lib/install.sh|lib/release_map.sh|lib/auto_update.sh) ;;
 		lib/*.sh)                    echo "$zd/$p" ;;
@@ -82,7 +88,7 @@ ow_layout_is_build() { case "$1" in */builds/*) return 0 ;; esac; return 1; }
 ow_layout_files()
 {
 	local root="$1" f
-	( cd "$root" && find openwrt files lib strats_new2.txt quic_strats.ini extras -type f 2>/dev/null ) |
+	( cd "$root" && find openwrt files lib webpanel strats_new2.txt quic_strats.ini extras -type f 2>/dev/null ) |
 	while IFS= read -r f; do
 		ow_layout_is_build "$f" && continue
 		[ -n "$(ow_layout_targets "$f")" ] && echo "$f"

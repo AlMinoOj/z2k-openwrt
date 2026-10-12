@@ -34,7 +34,7 @@ ow_blob_aliases()
 # использует — кладём туда ссылки на наши procd-службы (rc.common определяет
 # имя службы по цели ссылки).
 # S51z2k-warp — на переходник: z2k-warp.sh зовёт службу через `sh`.
-OW_COMPAT_INITS="S99zapret2:/etc/init.d/z2k S98tg-tunnel:/etc/init.d/z2k-tg S96z2k-rt-proxy:/etc/init.d/z2k-rtproxy S51z2k-warp:/opt/zapret2/openwrt/bin/z2k-warp-init"
+OW_COMPAT_INITS="S99zapret2:/etc/init.d/z2k S98tg-tunnel:/etc/init.d/z2k-tg S96z2k-rt-proxy:/etc/init.d/z2k-rtproxy S51z2k-warp:/opt/zapret2/openwrt/bin/z2k-warp-init S96z2k-webpanel:/etc/init.d/z2k-panel"
 
 ow_compat_inits()
 {
@@ -52,6 +52,11 @@ ow_postinstall()
 	local zd="${1:-/opt/zapret2}"
 	ow_blob_aliases "$zd"
 	ow_compat_inits
+	# Точка входа CGI панели: www/cgi-bin/api -> webpanel/cgi/api.sh (как у z2k).
+	if [ -f "$zd/webpanel/cgi/api.sh" ]; then
+		chmod 755 "$zd"/webpanel/cgi/*.sh 2>/dev/null
+		mkdir -p "$zd/www/cgi-bin" && ln -sf "$zd/webpanel/cgi/api.sh" "$zd/www/cgi-bin/api"
+	fi
 	[ -f "$zd/openwrt/bin/z2k-module" ] && ln -sf "$zd/openwrt/bin/z2k-module" /usr/bin/z2k-module 2>/dev/null
 	# CLI обновлений.
 	[ -f "$zd/openwrt/bin/z2k-update" ] && ln -sf "$zd/openwrt/bin/z2k-update" /usr/bin/z2k-update 2>/dev/null

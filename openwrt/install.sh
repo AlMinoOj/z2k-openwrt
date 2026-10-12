@@ -162,6 +162,15 @@ if [ -z "${Z2K_OW_NO_START:-}" ]; then
 	say "применяю стратегии и запускаю службу"
 	ow_z2k_apply_strategies || warn "применение стратегий вернуло ошибку — смотрите вывод выше"
 	for m in $(ow_modules_enabled); do ow_module_service_start "$m"; done
+	# Вебпанель: Z2K_OW_PANEL=0 — без неё.
+	if [ "${Z2K_OW_PANEL:-1}" = 1 ]; then
+		if ow_pkg_installed lighttpd-mod-cgi || { ow_pkg_update >/dev/null 2>&1; ow_pkg_install lighttpd lighttpd-mod-cgi lighttpd-mod-setenv >/dev/null 2>&1; }; then
+			/etc/init.d/z2k-panel enable && /etc/init.d/z2k-panel restart
+			say "вебпанель: http://$(cat "$ZD/webpanel/bind" 2>/dev/null):$(cat "$ZD/webpanel/port" 2>/dev/null)/"
+		else
+			warn "lighttpd не установился — вебпанель не запущена"
+		fi
+	fi
 	if /etc/init.d/z2k status >/dev/null 2>&1; then
 		say "готово: обход работает (nft list table inet zapret2 — правила)"
 	else

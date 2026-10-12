@@ -182,8 +182,11 @@ export function showLoginScreen(msg) {
       // ШАГ 2: ответ считаем ЗДЕСЬ. Пароль дальше этой строки не уходит —
       // ни в сеть, ни на роутер: панель работает по HTTP, и отправлять его
       // означало бы отдать пароль администратора любому, кто слушает сеть.
-      const ha1  = md5hex(user.value.trim() + ":" + cd.realm + ":" + pass.value);
-      const resp = await sha256hex(cd.challenge + ha1);
+      // OPENWRT: на OpenWrt пароль проверяет rpcd (учётка LuCI) по хешу из
+      // /etc/shadow — ответ в схеме Keenetic ему не сверить. Сервер сообщает
+      // это через realm "rpcd"; пароль уходит как есть, как и при входе в LuCI.
+      const resp = cd.realm === "rpcd" ? pass.value
+        : await sha256hex(cd.challenge + md5hex(user.value.trim() + ":" + cd.realm + ":" + pass.value));
       pass.value = "";
       const r = await fetch(API + "/auth/login", {
         method: "POST",

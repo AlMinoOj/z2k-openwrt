@@ -224,6 +224,9 @@ form_value() {
 
 # --- route dispatch ---
 
+# OPENWRT: платформенный слой z2k-openwrt (вход через rpcd, устройства, nft, обновления). На Keenetic файла нет.
+[ -r /opt/zapret2/openwrt/lib/panel-openwrt.sh ] && . /opt/zapret2/openwrt/lib/panel-openwrt.sh
+
 auth_require
 panel_auth_gate
 

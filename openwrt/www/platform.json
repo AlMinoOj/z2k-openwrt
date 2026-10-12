@@ -1,0 +1,5 @@
+{
+  "platform": "openwrt",
+  "hide_toggles": ["ppe", "fastroute"],
+  "hide_policy": true
+}

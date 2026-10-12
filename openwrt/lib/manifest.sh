@@ -69,6 +69,8 @@ ow_steps_for()
 			echo restart-warp ;;
 		openwrt/fw4/*)
 			echo fw4 ;;
+		webpanel/lighttpd.conf|openwrt/init.d/z2k-panel)
+			echo restart-panel ;;
 		files/lua/*|files/fake/*|files/S99zapret2.new|files/lists/*|files/etc/*|extras/*|\
 		openwrt/lib/s99-openwrt.sh|openwrt/init.d/z2k)
 			echo restart-service ;;
@@ -89,6 +91,7 @@ ow_step_order()
 	echo restart-rtproxy
 	echo restart-warp
 	echo fw4
+	echo restart-panel
 	echo cron
 }
 

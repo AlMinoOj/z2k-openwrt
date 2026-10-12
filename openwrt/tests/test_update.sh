@@ -141,6 +141,14 @@ echo "Z2K_AUTO_UPDATE_ENABLED=0" >> "$RFS$ZD/config"
 out=$(upd apply --auto 2>&1); eq "--auto выключено — код 0" 0 $?
 yes_ "--auto выключено — сообщение" 'printf "%s" "$out" | grep -q "выключено"'
 
+# === json для вебпанели: формат UPDATES.json апстрима ===
+js=$(upd json 2>/dev/null)
+n=$((n + 1)); printf '%s' "$js" | head -c 1 | grep -q '{' || { fail=$((fail + 1)); echo "FAIL: json не объект"; }
+yes_ "json: current" 'printf "%s" "$js" | grep -q "^  \"current\": \"v1.2.0\","'
+eq "json: история (3 записи, старые сверху)" "v1.0.0 v1.1.0 v1.2.0" \
+	"$(printf '%s\n' "$js" | sed -n 's/^{"v": "\([^"]*\)".*/\1/p' | tr '\n' ' ' | sed 's/ $//')"
+yes_ "json: валидный JSON" 'printf "%s" "$js" | python -c "import sys,json; json.load(sys.stdin)" 2>/dev/null || ! command -v python >/dev/null'
+
 # === шаги по путям ===
 eq "шаги: движок" "engine restart-service" "$(echo openwrt/engine.pin | ow_steps_merged | tr '\n' ' ' | sed 's/ $//')"
 eq "шаги: один перезапуск" "restart-service" "$(printf 'files/lua/a.lua\nfiles/fake/b.bin\nfiles/S99zapret2.new\n' | ow_steps_merged | tr '\n' ' ' | sed 's/ $//')"

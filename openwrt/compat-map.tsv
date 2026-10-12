@@ -105,12 +105,14 @@ rt-proxy/*	dev	исходники моста RuTracker (сборки лежат 
 build-matrix.tsv	dev	матрица сборки Go
 
 # --- вебпанель ---------------------------------------------------------------
+webpanel/www/js/core/auth.js	patched	// OPENWRT: пароль для rpcd (realm "rpcd") вместо хеша Keenetic
+webpanel/www/js/pages/toggles.js	patched	// OPENWRT: прятать PPE/fastroute/политику по www/platform.json
 webpanel/www/*	portable	SPA (статичные файлы)
-webpanel/cgi/api.sh	patched	TODO фаза 6: PATH /opt, маршруты PPE/fastroute
-webpanel/cgi/auth.sh	patched	TODO фаза 6: вход через NDM /auth -> rpcd/ubus session
-webpanel/cgi/actions.sh	patched	TODO фаза 6: ndmc, /opt/etc/init.d, ipset
-webpanel/init.d/*	replaced	procd: openwrt/init.d/z2k-panel (uhttpd)
-webpanel/lighttpd.conf	replaced	uhttpd-инстанс: openwrt/uci/z2k-panel
+webpanel/cgi/api.sh	patched	1 строка-хук `# OPENWRT:` -> openwrt/lib/panel-openwrt.sh
+webpanel/cgi/auth.sh	portable	вход через NDM переопределён в openwrt/lib/panel-openwrt.sh (rpcd)
+webpanel/cgi/actions.sh	portable	ndmc/ipset/обновления переопределены в openwrt/lib/panel-openwrt.sh
+webpanel/init.d/*	replaced	procd: openwrt/init.d/z2k-panel (lighttpd из пакетов OpenWrt)
+webpanel/lighttpd.conf	portable	шаблон конфига lighttpd (подстановки делает openwrt/init.d/z2k-panel)
 webpanel/install.sh	replaced	установка панели — часть openwrt/install.sh
 webpanel/uninstall.sh	replaced	удаление панели — часть openwrt/uninstall.sh
 
