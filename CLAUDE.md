@@ -51,6 +51,12 @@
 - CGI под `set -u`: всё OpenWrt-библиотечное (jshn.sh) — в подоболочке с `set +u`.
 - Стенд: панель на 127.0.0.1:18088 (Host: 192.168.1.1:8088, заголовок X-Z2K-Panel: 1); тестовый пароль root ВМ — scratchpad/vm/test-root-pass, вход по SSH — ключом.
 
+## Проверки (фаза 7, без CI)
+
+- Перед релизом: `dash openwrt/tests/run.sh` и `sh openwrt/maint/qemu-smoke.sh <openwrt-…-x86-64-generic-ext4-combined.img.gz>` (образы — scratchpad/vm). Новые файлы сначала `git add`: бандл берёт только отслеживаемые.
+- На роутере: `ssh root@роутер 'sh -s' < openwrt/maint/router-smoke.sh`.
+- Диагностика: хук в `files/z2k-diag.sh` -> `openwrt/lib/diag-openwrt.sh` (функции ipset/iptables/mount — только чтение, только вопросы диагностики).
+
 ## Справка по апстриму
 
 - Устройство: `ARCHITECTURE.md`, релизы: `RELEASING.md`.

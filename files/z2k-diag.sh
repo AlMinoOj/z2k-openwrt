@@ -2087,6 +2087,9 @@ print_json() {
         "$version" "$svc" "$(get_lan_ip)" "$(get_entware_arch)"
 }
 
+# OPENWRT: платформенный слой z2k-openwrt (nftables, fw4, /opt на корневой ФС). На Keenetic файла нет.
+[ -r "$ZAPRET2_DIR/openwrt/lib/diag-openwrt.sh" ] && . "$ZAPRET2_DIR/openwrt/lib/diag-openwrt.sh"
+
 # =============================================================================
 # main
 # =============================================================================

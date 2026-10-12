@@ -164,7 +164,15 @@ if [ -z "${Z2K_OW_NO_START:-}" ]; then
 	for m in $(ow_modules_enabled); do ow_module_service_start "$m"; done
 	# Вебпанель: Z2K_OW_PANEL=0 — без неё.
 	if [ "${Z2K_OW_PANEL:-1}" = 1 ]; then
+		had_lighttpd=0; ow_pkg_installed lighttpd && had_lighttpd=1
 		if ow_pkg_installed lighttpd-mod-cgi || { ow_pkg_update >/dev/null 2>&1; ow_pkg_install lighttpd lighttpd-mod-cgi lighttpd-mod-setenv >/dev/null 2>&1; }; then
+			# Пакет включает свою службу со стандартным конфигом: после
+			# перезагрузки второй lighttpd спорил бы с uhttpd (LuCI) за :80.
+			# Панель — своя служба z2k-panel; чужой, заранее стоявший lighttpd не трогаем.
+			if [ "$had_lighttpd" = 0 ] && [ -x /etc/init.d/lighttpd ]; then
+				/etc/init.d/lighttpd stop >/dev/null 2>&1
+				/etc/init.d/lighttpd disable >/dev/null 2>&1
+			fi
 			/etc/init.d/z2k-panel enable && /etc/init.d/z2k-panel restart
 			say "вебпанель: http://$(cat "$ZD/webpanel/bind" 2>/dev/null):$(cat "$ZD/webpanel/port" 2>/dev/null)/"
 		else
