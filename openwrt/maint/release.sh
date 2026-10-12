@@ -73,6 +73,7 @@ if [ "$TESTS" = 1 ]; then
 fi
 
 # --- манифест ---
+mkdir -p "$(dirname "$MF")"   # к первому релизу каталога ещё нет
 git ls-files | sh openwrt/maint/build-manifest.sh "$ROOT" "$VER" "$SEQ" "$UPSTREAM" "$RESET" "$DESC" "$MF" > "$MF.new"
 mv -f "$MF.new" "$MF"
 TAB=$(printf '	')
